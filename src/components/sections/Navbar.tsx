@@ -17,6 +17,22 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [settings, setSettings] = useState<{
+    siteNameAr: string;
+    siteNameEn: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) =>
+        setSettings({
+          siteNameAr: d.siteNameAr ?? "مريم",
+          siteNameEn: d.siteNameEn ?? "Maryam",
+        })
+      )
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,10 +108,10 @@ export function Navbar() {
             </div>
             <div className="flex flex-col leading-tight">
               <span className="font-amiri text-lg text-foreground tracking-wide">
-                مريم
+                {settings?.siteNameAr ?? "مريم"}
               </span>
               <span className="font-display text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
-                Maryam
+                {settings?.siteNameEn ?? "Maryam"}
               </span>
             </div>
           </button>
@@ -151,7 +167,7 @@ export function Navbar() {
           >
             <div className="flex items-center justify-between px-6 py-6 border-b border-border/40">
               <span className="font-amiri text-xl text-gold-gradient">
-                مريم
+                {settings?.siteNameAr ?? "مريم"}
               </span>
               <button
                 onClick={() => setMenuOpen(false)}

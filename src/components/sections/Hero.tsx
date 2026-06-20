@@ -1,9 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowDown, Aperture, Star } from "lucide-react";
 
+type Settings = {
+  taglineEn: string;
+  heroTitleAr: string;
+  heroSubtitleEn: string;
+  heroDescAr: string;
+  heroCta1Ar: string;
+  heroCta2Ar: string;
+  heroStat1Num: string;
+  heroStat1Label: string;
+  heroStat2Num: string;
+  heroStat2Label: string;
+  heroStat3Num: string;
+  heroStat3Label: string;
+};
+
 export function Hero() {
+  const [s, setS] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => setS(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !s) {
+    return (
+      <section
+        id="home"
+        className="relative min-h-screen flex items-center justify-center bg-background"
+      >
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </section>
+    );
+  }
+
   return (
     <section
       id="home"
@@ -68,7 +106,7 @@ export function Hero() {
           <div className="inline-flex items-center gap-3 px-5 py-2 border border-primary/30 rounded-full backdrop-blur-sm bg-background/30">
             <Aperture className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] tracking-[0.3em] text-muted-foreground uppercase font-inter">
-              Yemeni Visual Storyteller
+              {s.taglineEn}
             </span>
             <Aperture className="w-3.5 h-3.5 text-primary" />
           </div>
@@ -81,7 +119,7 @@ export function Hero() {
           transition={{ duration: 1.4, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="font-amiri text-7xl md:text-9xl lg:text-[12rem] font-bold leading-none mb-4"
         >
-          <span className="text-gold-gradient">مريم</span>
+          <span className="text-gold-gradient">{s.heroTitleAr}</span>
         </motion.h1>
 
         {/* English subtitle */}
@@ -91,7 +129,7 @@ export function Hero() {
           transition={{ duration: 1, delay: 1 }}
           className="font-display text-2xl md:text-4xl tracking-[0.3em] text-foreground/80 uppercase mb-8"
         >
-          M · A · R · Y · A · M
+          {s.heroSubtitleEn}
         </motion.div>
 
         {/* Tagline */}
@@ -101,9 +139,7 @@ export function Hero() {
           transition={{ duration: 1, delay: 1.2 }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10"
         >
-          أصوّر ما لا يُرى. أنتقل بالعدسة بين ضوء صنعاء القديمة وظلال العالم،
-          <br className="hidden md:block" />
-          لألتقط اللحظات التي تستحق أن تُروى.
+          {s.heroDescAr}
         </motion.p>
 
         {/* CTAs */}
@@ -125,7 +161,7 @@ export function Hero() {
             className="group relative px-8 py-4 bg-primary text-primary-foreground rounded-full font-medium tracking-wide overflow-hidden transition-all duration-500 hover:scale-105"
           >
             <span className="relative z-10 flex items-center gap-2">
-              استكشف الأعمال
+              {s.heroCta1Ar}
               <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -142,7 +178,7 @@ export function Hero() {
             }}
             className="px-8 py-4 border border-border text-foreground rounded-full font-medium tracking-wide hover:border-primary hover:text-primary transition-all duration-300"
           >
-            قصة مريم
+            {s.heroCta2Ar}
           </button>
         </motion.div>
 
@@ -154,16 +190,16 @@ export function Hero() {
           className="flex items-center justify-center gap-8 md:gap-16"
         >
           {[
-            { num: "+250", labelAr: "جلسة تصوير", labelEn: "Sessions" },
-            { num: "+7", labelAr: "سنوات خبرة", labelEn: "Years" },
-            { num: "+40", labelAr: "جائزة وتكريم", labelEn: "Awards" },
-          ].map((s, i) => (
+            { num: s.heroStat1Num, labelAr: s.heroStat1Label },
+            { num: s.heroStat2Num, labelAr: s.heroStat2Label },
+            { num: s.heroStat3Num, labelAr: s.heroStat3Label },
+          ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center">
               <span className="font-display text-2xl md:text-4xl text-gold-gradient font-bold">
-                {s.num}
+                {stat.num}
               </span>
               <span className="text-[11px] md:text-xs text-muted-foreground tracking-wider mt-1">
-                {s.labelAr}
+                {stat.labelAr}
               </span>
             </div>
           ))}

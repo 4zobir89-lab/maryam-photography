@@ -1,22 +1,44 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+const defaultWords = [
+  "بورتريه",
+  "Portraits",
+  "أعراس",
+  "Weddings",
+  "ثقافة",
+  "Culture",
+  "مناظر",
+  "Landscapes",
+  "صنعاء",
+  "Sana'a",
+  "عدن",
+  "Aden",
+  "حضرموت",
+  "Hadramaut",
+];
+
 export function Marquee() {
-  const words = [
-    "بورتريه",
-    "Portraits",
-    "أعراس",
-    "Weddings",
-    "ثقافة",
-    "Culture",
-    "مناظر",
-    "Landscapes",
-    "صنعاء",
-    "Sana'a",
-    "عدن",
-    "Aden",
-    "حضرموت",
-    "Hadramaut",
-  ];
+  const [words, setWords] = useState<string[]>(defaultWords);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.marqueeWords) {
+          const arr = d.marqueeWords
+            .split(",")
+            .map((w: string) => w.trim())
+            .filter(Boolean);
+          if (arr.length > 0) setWords(arr);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  if (words.length === 0) return null;
+
   return (
     <div className="relative py-10 bg-primary text-primary-foreground overflow-hidden border-y border-primary/20">
       <div className="flex items-center gap-8 animate-marquee whitespace-nowrap">

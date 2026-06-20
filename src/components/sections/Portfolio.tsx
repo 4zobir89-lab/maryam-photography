@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Maximize2, X } from "lucide-react";
 
@@ -8,111 +8,30 @@ type Project = {
   id: number;
   titleAr: string;
   titleEn: string;
-  category: "weddings" | "portraits" | "culture" | "landscapes";
+  category: string;
   year: string;
   location: string;
-  // visual style: gradient palette + emoji-style SVG motif
-  palette: [string, string, string];
-  motif: "bride" | "mountain" | "face" | "city" | "desert" | "tower" | "wave" | "tree";
-  span?: "wide" | "tall";
+  description: string;
+  imageData: string;
+  palette1: string;
+  palette2: string;
+  palette3: string;
+  motif: string;
+  span: string; // normal | wide | tall
+  featured: boolean;
+  published: boolean;
+  order: number;
 };
 
-const projects: Project[] = [
-  {
-    id: 1,
-    titleAr: "عروس صنعاء",
-    titleEn: "Bride of Sana'a",
-    category: "weddings",
-    year: "2024",
-    location: "صنعاء القديمة",
-    palette: ["oklch(0.4 0.1 40)", "oklch(0.2 0.05 285)", "oklch(0.78 0.13 75)"],
-    motif: "bride",
-    span: "tall",
-  },
-  {
-    id: 2,
-    titleAr: "وجه من حضرموت",
-    titleEn: "A Face from Hadramaut",
-    category: "portraits",
-    year: "2024",
-    location: "تريم",
-    palette: ["oklch(0.5 0.08 50)", "oklch(0.15 0.02 30)", "oklch(0.85 0.1 80)"],
-    motif: "face",
-    span: "wide",
-  },
-  {
-    id: 3,
-    titleAr: "أبراج اليمن",
-    titleEn: "Yemeni Towers",
-    category: "culture",
-    year: "2023",
-    location: "شبام حضرموت",
-    palette: ["oklch(0.55 0.12 60)", "oklch(0.25 0.05 40)", "oklch(0.9 0.08 80)"],
-    motif: "tower",
-  },
-  {
-    id: 4,
-    titleAr: "صحراء الربع الخالي",
-    titleEn: "Empty Quarter",
-    category: "landscapes",
-    year: "2023",
-    location: "حدود المهرة",
-    palette: ["oklch(0.6 0.1 55)", "oklch(0.3 0.05 35)", "oklch(0.85 0.12 75)"],
-    motif: "desert",
-    span: "wide",
-  },
-  {
-    id: 5,
-    titleAr: "عرس عدني",
-    titleEn: "Adeni Wedding",
-    category: "weddings",
-    year: "2024",
-    location: "عدن",
-    palette: ["oklch(0.45 0.15 350)", "oklch(0.15 0.03 320)", "oklch(0.85 0.1 75)"],
-    motif: "bride",
-  },
-  {
-    id: 6,
-    titleAr: "أمواج العرب",
-    titleEn: "Tides of Arabia",
-    category: "landscapes",
-    year: "2023",
-    location: "ساحل حضرموت",
-    palette: ["oklch(0.4 0.08 220)", "oklch(0.1 0.02 240)", "oklch(0.7 0.1 200)"],
-    motif: "wave",
-    span: "tall",
-  },
-  {
-    id: 7,
-    titleAr: "الحكمة في العيون",
-    titleEn: "Wisdom in Eyes",
-    category: "portraits",
-    year: "2024",
-    location: "ذمار",
-    palette: ["oklch(0.35 0.08 30)", "oklch(0.1 0.01 30)", "oklch(0.85 0.1 70)"],
-    motif: "face",
-  },
-  {
-    id: 8,
-    titleAr: "سوق الملح",
-    titleEn: "Salt Market",
-    category: "culture",
-    year: "2023",
-    location: "صنعاء",
-    palette: ["oklch(0.5 0.1 45)", "oklch(0.18 0.03 30)", "oklch(0.78 0.13 75)"],
-    motif: "city",
-  },
-  {
-    id: 9,
-    titleAr: "سنديانة بلقيس",
-    titleEn: "Bilqis' Oak",
-    category: "landscapes",
-    year: "2024",
-    location: "إب",
-    palette: ["oklch(0.4 0.1 140)", "oklch(0.12 0.02 150)", "oklch(0.85 0.1 80)"],
-    motif: "tree",
-  },
-];
+type MotifName =
+  | "bride"
+  | "mountain"
+  | "face"
+  | "city"
+  | "desert"
+  | "tower"
+  | "wave"
+  | "tree";
 
 const categories = [
   { id: "all", labelAr: "الكل", labelEn: "All" },
@@ -122,9 +41,16 @@ const categories = [
   { id: "landscapes", labelAr: "مناظر", labelEn: "Landscapes" },
 ];
 
-function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string[] }) {
+function MotifSvg({
+  motif,
+  palette,
+}: {
+  motif: string;
+  palette: string[];
+}) {
+  const m = (motif || "bride") as MotifName;
   const [c1, c2, c3] = palette;
-  const gradId = `g-${motif}-${c1.replace(/[^a-z0-9]/gi, "")}`;
+  const gradId = `g-${m}-${c1.replace(/[^a-z0-9]/gi, "")}`;
   return (
     <svg
       viewBox="0 0 400 300"
@@ -146,7 +72,7 @@ function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string
       <rect width="400" height="300" fill={`url(#${gradId}-r)`} />
 
       {/* Motif */}
-      {motif === "bride" && (
+      {m === "bride" && (
         <g opacity="0.85">
           <ellipse cx="200" cy="130" rx="55" ry="65" fill={c3} opacity="0.4" />
           <path
@@ -162,7 +88,7 @@ function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string
           <circle cx="200" cy="135" r="40" fill="none" stroke={c3} strokeWidth="0.5" opacity="0.5" />
         </g>
       )}
-      {motif === "face" && (
+      {m === "face" && (
         <g opacity="0.8">
           <ellipse cx="200" cy="150" rx="80" ry="100" fill={c2} opacity="0.6" />
           <ellipse cx="180" cy="140" rx="6" ry="4" fill="oklch(0.05 0 0)" />
@@ -171,7 +97,7 @@ function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string
           <path d="M 200 70 Q 140 90 130 130" stroke={c3} strokeWidth="3" fill="none" opacity="0.6" />
         </g>
       )}
-      {motif === "tower" && (
+      {m === "tower" && (
         <g opacity="0.85">
           {[100, 180, 260].map((x, i) => (
             <g key={i}>
@@ -185,21 +111,21 @@ function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string
           ))}
         </g>
       )}
-      {motif === "desert" && (
+      {m === "desert" && (
         <g opacity="0.85">
           <circle cx="200" cy="100" r="40" fill={c3} opacity="0.5" />
           <path d="M 0 220 Q 100 180 200 210 Q 300 240 400 200 L 400 300 L 0 300 Z" fill={c1} opacity="0.5" />
           <path d="M 0 250 Q 100 220 200 240 Q 300 260 400 230 L 400 300 L 0 300 Z" fill={c2} opacity="0.6" />
         </g>
       )}
-      {motif === "wave" && (
+      {m === "wave" && (
         <g opacity="0.85">
           <path d="M 0 180 Q 100 130 200 180 Q 300 230 400 180 L 400 300 L 0 300 Z" fill={c1} opacity="0.5" />
           <path d="M 0 220 Q 100 180 200 220 Q 300 260 400 220 L 400 300 L 0 300 Z" fill={c2} opacity="0.7" />
           <path d="M 0 260 Q 100 230 200 260 Q 300 290 400 260 L 400 300 L 0 300 Z" fill="oklch(0.05 0 0)" opacity="0.8" />
         </g>
       )}
-      {motif === "city" && (
+      {m === "city" && (
         <g opacity="0.85">
           {[60, 130, 200, 270, 340].map((x, i) => (
             <g key={i}>
@@ -216,7 +142,7 @@ function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string
           ))}
         </g>
       )}
-      {motif === "tree" && (
+      {m === "tree" && (
         <g opacity="0.85">
           <rect x="195" y="180" width="10" height="100" fill={c2} />
           <circle cx="200" cy="160" r="80" fill={c1} opacity="0.6" />
@@ -236,11 +162,37 @@ function MotifSvg({ motif, palette }: { motif: Project["motif"]; palette: string
 export function Portfolio() {
   const [active, setActive] = useState("all");
   const [selected, setSelected] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((d) => setProjects(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const paletteOf = (p: Project) =>
+    [p.palette1, p.palette2, p.palette3].filter(Boolean);
 
   const filtered =
     active === "all"
       ? projects
       : projects.filter((p) => p.category === active);
+
+  if (loading) {
+    return (
+      <section
+        id="portfolio"
+        className="relative py-32 md:py-44 bg-[oklch(0.06_0.005_285)] overflow-hidden"
+      >
+        <div className="container mx-auto max-w-7xl px-6 flex items-center justify-center min-h-[40vh]">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -299,6 +251,7 @@ export function Portfolio() {
         </motion.div>
 
         {/* Gallery grid */}
+        {filtered.length > 0 ? (
         <motion.div
           layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-[300px] md:auto-rows-[360px]"
@@ -323,7 +276,19 @@ export function Portfolio() {
               >
                 {/* Image / visual */}
                 <div className="absolute inset-0">
-                  <MotifSvg motif={project.motif} palette={project.palette} />
+                  {project.imageData ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={project.imageData}
+                      alt={project.titleAr}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <MotifSvg
+                      motif={project.motif}
+                      palette={paletteOf(project)}
+                    />
+                  )}
                 </div>
 
                 {/* Hover overlay */}
@@ -362,6 +327,11 @@ export function Portfolio() {
             ))}
           </AnimatePresence>
         </motion.div>
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            لا توجد أعمال منشورة بعد.
+          </div>
+        )}
 
         {/* Bottom CTA */}
         <motion.div
@@ -406,7 +376,19 @@ export function Portfolio() {
               className="relative max-w-5xl w-full grid md:grid-cols-2 gap-0 border border-border rounded-sm overflow-hidden bg-card"
             >
               <div className="relative aspect-[4/3] md:aspect-auto">
-                <MotifSvg motif={selected.motif} palette={selected.palette} />
+                {selected.imageData ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selected.imageData}
+                    alt={selected.titleAr}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <MotifSvg
+                    motif={selected.motif}
+                    palette={paletteOf(selected)}
+                  />
+                )}
               </div>
               <div className="p-8 md:p-12 flex flex-col justify-center text-right">
                 <span className="font-inter text-[10px] tracking-[0.4em] text-primary uppercase mb-3">
@@ -420,10 +402,10 @@ export function Portfolio() {
                 </p>
                 <div className="hairline w-16 mb-6" />
                 <p className="text-muted-foreground leading-loose mb-6">
-                  صورة من سلسلة {categories.find((c) => c.id === selected.category)?.labelAr} التقطتها
-                  مريم في {selected.location}. تجمع اللقطة بين الضوء الطبيعي والحركة
-                  العفوية لتوثيق لحظة لا تتكرر، وتروي حكاية إنسانية تتجاوز حدود
-                  الإطار.
+                  {selected.description ||
+                    `صورة من سلسلة ${
+                      categories.find((c) => c.id === selected.category)?.labelAr || ""
+                    } التقطتها مريم في ${selected.location}. تجمع اللقطة بين الضوء الطبيعي والحركة العفوية لتوثيق لحظة لا تتكرر.`}
                 </p>
                 <div className="flex items-center gap-6 text-sm">
                   <div>

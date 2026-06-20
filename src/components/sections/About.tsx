@@ -1,40 +1,72 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, Award, Globe2, Heart } from "lucide-react";
+import { Camera, Award, Globe2, Heart, LucideIcon } from "lucide-react";
 
-const philosophy = [
-  {
-    icon: Camera,
-    titleAr: "بصمة بصرية",
-    titleEn: "Signature",
-    descAr:
-      "كل صورة تُحمل بصمتي السينمائية: ضوء دافئ، ظلال عميقة، وحكاية تُروى قبل أن يلمحها الناظر.",
-  },
-  {
-    icon: Globe2,
-    titleAr: "جذور يمنية",
-    titleEn: "Yemeni Roots",
-    descAr:
-      "أصيل من صنعاء القديمة. أنقل تراث اليمن المعماري والإنساني إلى مشهد بصري عالمي معاصر.",
-  },
-  {
-    icon: Award,
-    titleAr: "تكريم دولي",
-    titleEn: "Recognition",
-    descAr:
-      "أعمالي عُرضت في معارض دبي، إسطنبول، وبرلين. حائزة على جوائز Sony World Photography و National Geographic Yemen.",
-  },
-  {
-    icon: Heart,
-    titleAr: "روح الإنسان",
-    titleEn: "Human Soul",
-    descAr:
-      "أبحث دائمًا عن اللحظة العفوية التي تنسى فيها الكاميرا — حين يظهر الناس كما هم حقًا.",
-  },
-];
+type Settings = {
+  aboutTitleAr: string;
+  aboutSubtitleEn: string;
+  aboutHeadingAr: string;
+  aboutPara1: string;
+  aboutPara2: string;
+  aboutTags: string;
+  aboutSignature: string;
+};
+
+type PhilosophyCard = {
+  id: number;
+  icon: string;
+  titleAr: string;
+  titleEn: string;
+  descAr: string;
+};
+
+const iconMap: Record<string, LucideIcon> = {
+  Camera,
+  Globe2,
+  Award,
+  Heart,
+};
+
+function LoadingSkeleton() {
+  return (
+    <section
+      id="about"
+      className="relative py-32 md:py-44 overflow-hidden bg-background"
+    >
+      <div className="container mx-auto max-w-7xl px-6 flex items-center justify-center min-h-[40vh]">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    </section>
+  );
+}
 
 export function About() {
+  const [s, setS] = useState<Settings | null>(null);
+  const [philosophy, setPhilosophy] = useState<PhilosophyCard[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/settings").then((r) => r.json()),
+      fetch("/api/philosophy").then((r) => r.json()),
+    ])
+      .then(([settings, cards]) => {
+        setS(settings);
+        setPhilosophy(Array.isArray(cards) ? cards : []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !s) return <LoadingSkeleton />;
+
+  const tags = (s.aboutTags || "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
   return (
     <section
       id="about"
@@ -56,11 +88,25 @@ export function About() {
           className="text-center mb-20"
         >
           <span className="font-inter text-[11px] tracking-[0.5em] text-primary uppercase block mb-4">
-            — About the Artist —
+            — {s.aboutSubtitleEn} —
           </span>
           <h2 className="font-amiri text-5xl md:text-7xl font-bold mb-6">
-            <span className="text-gold-gradient">قصة</span>{" "}
-            <span className="text-foreground">خلف العدسة</span>
+            {(() => {
+              const parts = (s.aboutTitleAr || "").split(" ");
+              const first = parts.shift() || "";
+              const rest = parts.join(" ");
+              return (
+                <>
+                  <span className="text-gold-gradient">{first}</span>
+                  {rest && (
+                    <>
+                      {" "}
+                      <span className="text-foreground">{rest}</span>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </h2>
           <div className="hairline w-32 mx-auto" />
         </motion.div>
@@ -170,33 +216,19 @@ export function About() {
             </span>
 
             <h3 className="font-amiri text-4xl md:text-5xl font-bold leading-tight text-foreground">
-              من سردات صنعاء إلى{" "}
-              <span className="text-gold-gradient">عدسة العالم</span>
+              {s.aboutHeadingAr}
             </h3>
 
             <p className="text-lg md:text-xl text-muted-foreground leading-loose">
-              وُلدت مريم في قلب صنعاء القديمة، حيث يتنفس التراب ضوءًا ذهبيًا مع
-              كل غروب. حملت أول كاميرا في الخامسة عشرة من عمرها، ومنذ ذلك اليوم
-              لم تعد العدسة أداةً بل امتدادًا لروحها. تتأمل في الناس ما لا يقولونه،
-              وتلتقط في المدن ما يفوت العابرين.
+              {s.aboutPara1}
             </p>
 
             <p className="text-base md:text-lg text-muted-foreground/80 leading-loose">
-              درست الفنون البصرية في دبي، وعملت لاحقًا مع منصات دولية مثل
-              National Geographic Arabia و Magnum Photos. لكنها بقيت وفية
-              لجذورها — تستلهم من العمارة اليمانية، ومن وجوه الناس في الأسواق
-              القديمة، ومن ضوء الصباح الذي يلامس جدران الجبس. كل صورة عندها ليست
-              لقطة، بل وثيقة إنسانية تحمل بصمة الزمان والمكان.
+              {s.aboutPara2}
             </p>
 
             <div className="flex flex-wrap gap-3 pt-4">
-              {[
-                "بورتريه",
-                "تصوير أعراس",
-                "تصوير ثقافي",
-                "فوتوجورناليزم",
-                "تصوير معماري",
-              ].map((tag, i) => (
+              {tags.map((tag, i) => (
                 <span
                   key={i}
                   className="px-4 py-2 text-sm border border-border rounded-full text-muted-foreground hover:border-primary hover:text-primary transition-colors"
@@ -209,7 +241,7 @@ export function About() {
             {/* Signature */}
             <div className="pt-8 flex items-center gap-6">
               <div className="font-amiri text-3xl text-gold-gradient">
-                ~ مريم
+                {s.aboutSignature}
               </div>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/40 to-transparent" />
               <div className="text-right">
@@ -225,12 +257,13 @@ export function About() {
         </div>
 
         {/* Philosophy grid */}
+        {philosophy.length > 0 && (
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {philosophy.map((item, i) => {
-            const Icon = item.icon;
+            const Icon = iconMap[item.icon] || Camera;
             return (
               <motion.div
-                key={i}
+                key={item.id ?? i}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -257,6 +290,7 @@ export function About() {
             );
           })}
         </div>
+        )}
       </div>
     </section>
   );

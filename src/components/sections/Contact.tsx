@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Mail,
@@ -10,31 +10,26 @@ import {
   Send,
   MessageCircle,
   Check,
+  LucideIcon,
 } from "lucide-react";
 
-const contactInfo = [
-  {
-    icon: Mail,
-    labelAr: "البريد الإلكتروني",
-    labelEn: "Email",
-    value: "hello@maryam.photo",
-    href: "mailto:hello@maryam.photo",
-  },
-  {
-    icon: Phone,
-    labelAr: "الهاتف",
-    labelEn: "Phone",
-    value: "+967 77 123 4567",
-    href: "tel:+967771234567",
-  },
-  {
-    icon: MapPin,
-    labelAr: "الموقع",
-    labelEn: "Studio",
-    value: "صنعاء القديمة · اليمن",
-    href: "#",
-  },
-];
+type Settings = {
+  contactTitleAr: string;
+  contactSubtitleEn: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  contactInstagram: string;
+  contactWhatsapp: string;
+};
+
+type ContactItem = {
+  icon: LucideIcon;
+  labelAr: string;
+  labelEn: string;
+  value: string;
+  href: string;
+};
 
 const services = [
   "تصوير أعراس",
@@ -46,12 +41,22 @@ const services = [
 
 export function Contact() {
   const [sent, setSent] = useState(false);
+  const [s, setS] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     name: "",
     email: "",
     service: services[0],
     message: "",
   });
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => setS(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +66,58 @@ export function Contact() {
       setForm({ name: "", email: "", service: services[0], message: "" });
     }, 4000);
   };
+
+  if (loading || !s) {
+    return (
+      <section
+        id="contact"
+        className="relative py-32 md:py-44 bg-background overflow-hidden"
+      >
+        <div className="container mx-auto max-w-7xl px-6 flex items-center justify-center min-h-[40vh]">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
+  const contactInfo: ContactItem[] = [
+    {
+      icon: Mail,
+      labelAr: "البريد الإلكتروني",
+      labelEn: "Email",
+      value: s.contactEmail,
+      href: s.contactEmail ? `mailto:${s.contactEmail}` : "#",
+    },
+    {
+      icon: Phone,
+      labelAr: "الهاتف",
+      labelEn: "Phone",
+      value: s.contactPhone,
+      href: s.contactPhone
+        ? `tel:${s.contactPhone.replace(/[^+\d]/g, "")}`
+        : "#",
+    },
+    {
+      icon: MapPin,
+      labelAr: "الموقع",
+      labelEn: "Studio",
+      value: s.contactAddress,
+      href: "#",
+    },
+  ];
+
+  const instagramHref =
+    s.contactInstagram && s.contactInstagram !== "#"
+      ? s.contactInstagram.startsWith("http")
+        ? s.contactInstagram
+        : `https://instagram.com/${s.contactInstagram.replace(/^@/, "")}`
+      : "#";
+  const whatsappHref =
+    s.contactWhatsapp && s.contactWhatsapp !== "#"
+      ? s.contactWhatsapp.startsWith("http")
+        ? s.contactWhatsapp
+        : `https://wa.me/${s.contactWhatsapp.replace(/[^+\d]/g, "")}`
+      : "#";
 
   return (
     <section
@@ -83,11 +140,25 @@ export function Contact() {
           className="text-center mb-16"
         >
           <span className="font-inter text-[11px] tracking-[0.5em] text-primary uppercase block mb-4">
-            — Let's Create Together —
+            — {s.contactSubtitleEn} —
           </span>
           <h2 className="font-amiri text-5xl md:text-7xl font-bold mb-6">
-            <span className="text-gold-gradient">لنبدأ</span>{" "}
-            <span className="text-foreground">حكايتك</span>
+            {(() => {
+              const parts = (s.contactTitleAr || "").split(" ");
+              const first = parts.shift() || "";
+              const rest = parts.join(" ");
+              return (
+                <>
+                  <span className="text-gold-gradient">{first}</span>
+                  {rest && (
+                    <>
+                      {" "}
+                      <span className="text-foreground">{rest}</span>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto leading-loose">
             كل حكاية تستحق أن تُروى بصريًا. تواصل معي لنحوّ لحظاتك إلى ذكريات
@@ -148,16 +219,18 @@ export function Contact() {
               </div>
               <div className="flex items-center gap-3">
                 {[
-                  { icon: Instagram, label: "Instagram" },
-                  { icon: MessageCircle, label: "WhatsApp" },
-                  { icon: Mail, label: "Email" },
-                ].map((s, i) => {
-                  const Icon = s.icon;
+                  { icon: Instagram, label: "Instagram", href: instagramHref },
+                  { icon: MessageCircle, label: "WhatsApp", href: whatsappHref },
+                  { icon: Mail, label: "Email", href: s.contactEmail ? `mailto:${s.contactEmail}` : "#" },
+                ].map((soc, i) => {
+                  const Icon = soc.icon;
                   return (
                     <a
                       key={i}
-                      href="#"
-                      aria-label={s.label}
+                      href={soc.href}
+                      target={soc.href.startsWith("http") ? "_blank" : undefined}
+                      rel={soc.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      aria-label={soc.label}
                       className="w-11 h-11 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary hover:scale-110 transition-all duration-300"
                     >
                       <Icon className="w-4 h-4" />

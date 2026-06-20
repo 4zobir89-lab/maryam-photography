@@ -1,62 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
 
-const testimonials = [
-  {
-    quoteAr:
-      "مريم لم تُصور زفافنا فحسب، بل التقطت أرواحنا. كل صورة تحكي حكاية كاملة. عندما رأينا الألبوم لأول مرة، بكينا — لقد رأت في يومنا ما لم نره نحن وسط الزحام. لمسة مريم سحرية بكل معنى الكلمة.",
-    nameAr: "أحمد و سارة المطري",
-    roleAr: "عرسان · صنعاء",
-    roleEn: "Newlyweds",
-    rating: 5,
-    avatar: "أ س",
-  },
-  {
-    quoteAr:
-      "كعلامة تجارية، كنا نبحث عن صورة تعبّر عن هويتنا اليمنية بأسلوب عالمي. مريم فهمت الرؤية فورًا، وأنتجت صورًا تجاوزت كل توقعاتنا. عملها رفع مستوى علامتنا التجارية بشكل ملموس.",
-    nameAr: "ليلى العنسي",
-    roleAr: "مديرة تسويق · Yemen Heritage",
-    roleEn: "Marketing Director",
-    rating: 5,
-    avatar: "ل ع",
-  },
-  {
-    quoteAr:
-      "حضرت ورشة عمل مريم وخرجت بتصور مختلف تمامًا عن التصوير. هي لا تُعلّم التقنية فحسب، بل تُعلّم الرؤية. بعد ثلاثة أشهر من المتابعة، تطوّر أسلوبي بطريقة لم أكن أتخيلها. استثمار يستحق كل ريال.",
-    nameAr: "خالد الشميري",
-    roleAr: "مصور محترف · عدن",
-    roleEn: "Photographer",
-    rating: 5,
-    avatar: "خ ش",
-  },
-  {
-    quoteAr:
-      "عملت مع مصورين كثر حول العالم، لكن مريم تمتلك نادرة: القدرة على جعل الناس ينسون الكاميرا. بورتريهها لوالدي قبل رحيله بأشهر أصبح أغلى ما أملك. شكرًا مريم على هذه الهدية.",
-    nameAr: "ريم النصاري",
-    roleAr: "كاتبة · دبي",
-    roleEn: "Writer",
-    rating: 5,
-    avatar: "ر ن",
-  },
-];
+type Testimonial = {
+  id: number;
+  quoteAr: string;
+  nameAr: string;
+  roleAr: string;
+  roleEn: string;
+  rating: number;
+  avatar: string;
+};
 
 export function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [idx, setIdx] = useState(0);
   const [direction, setDirection] = useState(1);
 
+  useEffect(() => {
+    fetch("/api/testimonials")
+      .then((r) => r.json())
+      .then((d) => setTestimonials(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Clamp idx when testimonials change so we never point past the end
+  useEffect(() => {
+    if (idx > 0 && idx >= testimonials.length) {
+      setIdx(0);
+    }
+  }, [testimonials.length, idx]);
+
   const next = () => {
     setDirection(1);
-    setIdx((p) => (p + 1) % testimonials.length);
+    setIdx((p) => (p + 1) % Math.max(testimonials.length, 1));
   };
   const prev = () => {
     setDirection(-1);
-    setIdx((p) => (p - 1 + testimonials.length) % testimonials.length);
+    setIdx((p) => (p - 1 + testimonials.length) % Math.max(testimonials.length, 1));
   };
 
-  const current = testimonials[idx];
+  if (loading) {
+    return (
+      <section
+        id="testimonials"
+        className="relative py-32 md:py-44 bg-[oklch(0.06_0.005_285)] overflow-hidden"
+      >
+        <div className="container mx-auto max-w-7xl px-6 flex items-center justify-center min-h-[40vh]">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
+  if (testimonials.length === 0) return null;
+
+  const current = testimonials[Math.min(idx, testimonials.length - 1)];
+  const avatarText =
+    current.avatar ||
+    current.nameAr
+      .split(" ")
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join(" ");
 
   return (
     <section
@@ -100,7 +110,7 @@ export function Testimonials() {
 
               {/* Rating */}
               <div className="flex justify-center gap-1 mb-8">
-                {Array.from({ length: current.rating }).map((_, i) => (
+                {Array.from({ length: Math.min(current.rating || 0, 5) }).map((_, i) => (
                   <Star
                     key={i}
                     className="w-5 h-5 fill-primary text-primary"
@@ -117,7 +127,7 @@ export function Testimonials() {
               <div className="flex flex-col items-center gap-3">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center">
                   <span className="font-amiri text-xl text-gold-gradient">
-                    {current.avatar}
+                    {avatarText}
                   </span>
                 </div>
                 <div className="text-center">

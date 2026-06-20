@@ -1,0 +1,215 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  LayoutDashboard,
+  Image,
+  Briefcase,
+  MessageSquare,
+  Settings,
+  Home,
+  LogOut,
+  Camera,
+  Menu,
+  X,
+  Sparkles,
+  Mail,
+} from "lucide-react";
+
+const navItems = [
+  { href: "/admin", labelAr: "نظرة عامة", icon: LayoutDashboard },
+  { href: "/admin/hero", labelAr: "القسم الرئيسي", icon: Sparkles },
+  { href: "/admin/about", labelAr: "من أنا", icon: Camera },
+  { href: "/admin/projects", labelAr: "الأعمال", icon: Image },
+  { href: "/admin/services", labelAr: "الخدمات", icon: Briefcase },
+  { href: "/admin/testimonials", labelAr: "آراء العملاء", icon: MessageSquare },
+  { href: "/admin/contact", labelAr: "التواصل والفوتر", icon: Mail },
+  { href: "/admin/settings", labelAr: "الإعدادات", icon: Settings },
+];
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<{ name?: string; username: string } | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.user) {
+          router.push("/admin/login");
+        } else {
+          setUser(data.user);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [router]);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+    router.refresh();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Login page is standalone — no sidebar
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex" dir="rtl">
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:sticky top-0 right-0 h-screen w-72 bg-card border-l border-border z-40 transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="p-6 border-b border-border">
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="w-11 h-11 flex items-center justify-center">
+                <svg viewBox="0 0 44 44" className="w-full h-full">
+                  <circle
+                    cx="22"
+                    cy="22"
+                    r="20"
+                    fill="none"
+                    stroke="oklch(0.78 0.13 75)"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x="22"
+                    y="29"
+                    textAnchor="middle"
+                    className="font-display fill-[oklch(0.85_0.12_80)]"
+                    fontSize="20"
+                    fontWeight="700"
+                  >
+                    M
+                  </text>
+                </svg>
+              </div>
+              <div>
+                <div className="font-amiri text-xl text-gold-gradient">
+                  مريم
+                </div>
+                <div className="font-display text-[9px] tracking-[0.3em] text-muted-foreground uppercase">
+                  Admin Panel
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-sm transition-all duration-200 ${
+                    isActive
+                      ? "bg-primary/10 border border-primary/30 text-primary"
+                      : "text-muted-foreground hover:bg-card/60 hover:text-foreground border border-transparent"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{item.labelAr}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Bottom */}
+          <div className="p-4 border-t border-border space-y-2">
+            <Link
+              href="/"
+              target="_blank"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              عرض الموقع
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-sm transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              تسجيل الخروج
+            </button>
+            {user && (
+              <div className="pt-3 mt-3 border-t border-border text-xs text-muted-foreground">
+                <div className="text-foreground font-medium">
+                  {user.name || user.username}
+                </div>
+                <div className="font-inter">@{user.username}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Main */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Mobile top bar */}
+        <header className="lg:hidden flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-20">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="w-10 h-10 flex items-center justify-center text-foreground"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="font-amiri text-lg text-gold-gradient">لوحة التحكم</div>
+          <Link
+            href="/"
+            target="_blank"
+            className="w-10 h-10 flex items-center justify-center text-muted-foreground"
+          >
+            <Home className="w-5 h-5" />
+          </Link>
+        </header>
+
+        <main className="flex-1 p-6 md:p-10 overflow-x-hidden">{children}</main>
+      </div>
+    </div>
+  );
+}

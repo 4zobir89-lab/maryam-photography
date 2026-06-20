@@ -1,29 +1,26 @@
-// Prisma schema for Maryam Photography CMS
-// Learn more: https://pris.ly/d/prisma-schema
+// Prisma schema for Maryam Photography CMS — Production (Postgres)
+// This is used on Vercel production. For local dev, use prisma/schema.prisma (SQLite).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  // SQLite for local dev, can be switched to postgresql for production (Vercel)
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 // ===== Site-wide Settings (singleton) =====
 model SiteSettings {
   id              Int      @id @default(1)
-  // Brand
   siteNameAr      String   @default("مريم")
   siteNameEn      String   @default("Maryam")
   logoLetter      String   @default("M")
   taglineAr       String   @default("بصريات سينمائية تلتقط الروح اليمنية والعالمية")
   taglineEn       String   @default("Yemeni Visual Storyteller")
-  // Hero
   heroTitleAr     String   @default("مريم")
   heroSubtitleEn  String   @default("M·A·R·Y·A·M")
-  heroDescAr      String   @default("أصوّر ما لا يُرى. أنتقل بالعدسة بين ضوء صنعاء القديمة وظلال العالم، لألتقط اللحظات التي تستحق أن تُروى.")
+  heroDescAr      String   @default("أصوّر ما لا يُرى.")
   heroCta1Ar      String   @default("استكشف الأعمال")
   heroCta2Ar      String   @default("قصة مريم")
   heroStat1Num    String   @default("+250")
@@ -32,17 +29,14 @@ model SiteSettings {
   heroStat2Label  String   @default("سنوات خبرة")
   heroStat3Num    String   @default("+40")
   heroStat3Label  String   @default("جائزة وتكريم")
-  // Marquee
   marqueeWords    String   @default("بورتريه,Portraits,أعراس,Weddings,ثقافة,Culture,مناظر,Landscapes,صنعاء,Sana'a,عدن,Aden")
-  // About
   aboutTitleAr    String   @default("قصة خلف العدسة")
   aboutSubtitleEn String   @default("About the Artist")
   aboutHeadingAr  String   @default("من سردات صنعاء إلى عدسة العالم")
-  aboutPara1      String   @default("وُلدت مريم في قلب صنعاء القديمة، حيث يتنفس التراب ضوءًا ذهبيًا مع كل غروب. حملت أول كاميرا في الخامسة عشرة من عمرها، ومنذ ذلك اليوم لم تعد العدسة أداةً بل امتدادًا لروحها.")
-  aboutPara2      String   @default("درست الفنون البصرية في دبي، وعملت لاحقًا مع منصات دولية مثل National Geographic Arabia و Magnum Photos. لكنها بقيت وفية لجذورها.")
-  aboutTags       String   @default("بورتريه,تصوير أعراس,تصوير ثقافي,فوتوجورناليزم,تصوير معماري")
+  aboutPara1      String   @default("")
+  aboutPara2      String   @default("")
+  aboutTags       String   @default("")
   aboutSignature  String   @default("~ مريم")
-  // Section titles
   portfolioTitleAr    String @default("معرض الأعمال")
   portfolioSubtitleEn String @default("Selected Works")
   servicesTitleAr     String @default("خدمات التصوير")
@@ -51,38 +45,32 @@ model SiteSettings {
   testimonialsSubtitleEn String @default("Client Voices")
   contactTitleAr      String @default("لنبدأ حكايتك")
   contactSubtitleEn   String @default("Let's Create Together")
-  // Contact info
   contactEmail    String   @default("hello@maryam.photo")
   contactPhone    String   @default("+967 77 123 4567")
   contactAddress  String   @default("صنعاء القديمة · اليمن")
   contactInstagram String  @default("#")
   contactWhatsapp  String  @default("#")
-  // Footer
-  footerDesc      String   @default("بصريات سينمائية من قلب صنعاء. أصوّر الحكايات قبل الأشخاص، وألتقط في كل إطار لحظة تستحق أن تُروى.")
+  footerDesc      String   @default("")
   footerCopyright String   @default("© 2024 مريم. جميع الحقوق محفوظة.")
-  // Theme
   primaryColor    String   @default("oklch(0.82 0.12 80)")
   backgroundColor String   @default("oklch(0.08 0.005 285)")
   updatedAt       DateTime @updatedAt
 }
 
-// ===== Portfolio Projects =====
 model Project {
   id          Int      @id @default(autoincrement())
   titleAr     String
   titleEn     String
-  category    String   @default("weddings") // weddings | portraits | culture | landscapes
+  category    String   @default("weddings")
   year        String   @default("2024")
   location    String
   description String   @default("")
-  // Image stored as base64 data URL (works on Vercel)
   imageData   String   @default("")
-  // Fallback palette colors if no image
   palette1    String   @default("oklch(0.4 0.1 40)")
   palette2    String   @default("oklch(0.2 0.05 285)")
   palette3    String   @default("oklch(0.78 0.13 75)")
-  motif       String   @default("bride") // bride | mountain | face | city | desert | tower | wave | tree
-  span        String   @default("normal") // normal | wide | tall
+  motif       String   @default("bride")
+  span        String   @default("normal")
   featured    Boolean  @default(false)
   order       Int      @default(0)
   published   Boolean  @default(true)
@@ -93,7 +81,6 @@ model Project {
   @@index([published])
 }
 
-// ===== Services =====
 model Service {
   id          Int      @id @default(autoincrement())
   titleAr     String
@@ -101,9 +88,8 @@ model Service {
   description String   @default("")
   price       String   @default("")
   duration    String   @default("")
-  // Features stored as JSON string array
   features    String   @default("[]")
-  icon        String   @default("Camera") // Heart | Camera | Building2 | Sparkles
+  icon        String   @default("Camera")
   accentFrom  String   @default("oklch(0.78 0.13 75 / 0.15)")
   featured    Boolean  @default(false)
   order       Int      @default(0)
@@ -112,7 +98,6 @@ model Service {
   updatedAt   DateTime @updatedAt
 }
 
-// ===== Testimonials =====
 model Testimonial {
   id        Int      @id @default(autoincrement())
   quoteAr   String
@@ -120,17 +105,16 @@ model Testimonial {
   roleAr    String
   roleEn    String
   rating    Int      @default(5)
-  avatar    String   @default("") // letters or base64
+  avatar    String   @default("")
   order     Int      @default(0)
   published Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// ===== About Philosophy Cards =====
 model PhilosophyCard {
   id        Int      @id @default(autoincrement())
-  icon      String   @default("Camera") // Camera | Globe2 | Award | Heart
+  icon      String   @default("Camera")
   titleAr   String
   titleEn   String
   descAr    String
@@ -138,15 +122,11 @@ model PhilosophyCard {
   updatedAt DateTime @updatedAt
 }
 
-// ===== Admin User (for NextAuth credentials) =====
 model AdminUser {
   id        String   @id @default(cuid())
   username  String   @unique
-  password  String   // hashed with bcrypt
+  password  String
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
-// ===== Sessions (used by NextAuth - JWT strategy, no DB sessions needed) =====
-// Using JWT strategy for simplicity and Vercel compatibility

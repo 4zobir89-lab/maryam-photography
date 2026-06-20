@@ -1,7 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Instagram, MessageCircle, Mail, ArrowUp } from "lucide-react";
+
+type Settings = {
+  siteNameAr: string;
+  footerDesc: string;
+  footerCopyright: string;
+  contactInstagram: string;
+  contactWhatsapp: string;
+  contactEmail: string;
+};
 
 const footerLinks = [
   {
@@ -37,6 +47,36 @@ const footerLinks = [
 ];
 
 export function Footer() {
+  const [s, setS] = useState<Settings | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => setS(d))
+      .catch(() => {});
+  }, []);
+
+  const siteNameAr = s?.siteNameAr ?? "مريم";
+  const footerDesc =
+    s?.footerDesc ??
+    "بصريات سينمائية من قلب صنعاء. أصوّر الحكايات قبل الأشخاص، وألتقط في كل إطار لحظة تستحق أن تُروى.";
+  const footerCopyright =
+    s?.footerCopyright ?? "© 2024 مريم. جميع الحقوق محفوظة.";
+
+  const instagramHref =
+    s?.contactInstagram && s.contactInstagram !== "#"
+      ? s.contactInstagram.startsWith("http")
+        ? s.contactInstagram
+        : `https://instagram.com/${s.contactInstagram.replace(/^@/, "")}`
+      : "#";
+  const whatsappHref =
+    s?.contactWhatsapp && s.contactWhatsapp !== "#"
+      ? s.contactWhatsapp.startsWith("http")
+        ? s.contactWhatsapp
+        : `https://wa.me/${s.contactWhatsapp.replace(/[^+\d]/g, "")}`
+      : "#";
+  const emailHref = s?.contactEmail ? `mailto:${s.contactEmail}` : "#";
+
   return (
     <footer className="relative bg-[oklch(0.04_0.005_285)] border-t border-border/40 pt-20 pb-8 overflow-hidden">
       {/* Top glow */}
@@ -70,7 +110,7 @@ export function Footer() {
               </svg>
               <div>
                 <div className="font-amiri text-2xl text-gold-gradient">
-                  مريم
+                  {siteNameAr}
                 </div>
                 <div className="font-display text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
                   Maryam Photography
@@ -79,23 +119,24 @@ export function Footer() {
             </div>
 
             <p className="text-muted-foreground leading-loose max-w-md">
-              بصريات سينمائية من قلب صنعاء. أصوّر الحكايات قبل الأشخاص،
-              وألتقط في كل إطار لحظة تستحق أن تُروى.
+              {footerDesc}
             </p>
 
             {/* Social */}
             <div className="flex items-center gap-3">
               {[
-                { icon: Instagram, label: "Instagram" },
-                { icon: MessageCircle, label: "WhatsApp" },
-                { icon: Mail, label: "Email" },
-              ].map((s, i) => {
-                const Icon = s.icon;
+                { icon: Instagram, label: "Instagram", href: instagramHref },
+                { icon: MessageCircle, label: "WhatsApp", href: whatsappHref },
+                { icon: Mail, label: "Email", href: emailHref },
+              ].map((soc, i) => {
+                const Icon = soc.icon;
                 return (
                   <a
                     key={i}
-                    href="#"
-                    aria-label={s.label}
+                    href={soc.href}
+                    target={soc.href.startsWith("http") ? "_blank" : undefined}
+                    rel={soc.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    aria-label={soc.label}
                     className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary hover:scale-110 transition-all duration-300"
                   >
                     <Icon className="w-4 h-4" />
@@ -158,7 +199,7 @@ export function Footer() {
           className="relative text-center py-10 mb-8 border-y border-border/40"
         >
           <div className="font-amiri text-6xl md:text-9xl lg:text-[12rem] font-bold leading-none">
-            <span className="text-gold-gradient opacity-30">مريم</span>
+            <span className="text-gold-gradient opacity-30">{siteNameAr}</span>
           </div>
           <div className="font-display text-xs md:text-sm tracking-[0.5em] text-muted-foreground uppercase mt-3">
             — M · A · R · Y · A · M —
@@ -168,7 +209,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-4">
-            <span>© 2024 مريم. جميع الحقوق محفوظة.</span>
+            <span>{footerCopyright}</span>
             <span className="hidden md:inline">·</span>
             <a href="#" className="hover:text-primary transition-colors">
               سياسة الخصوصية

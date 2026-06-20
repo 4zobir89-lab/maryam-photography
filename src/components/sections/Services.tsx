@@ -1,80 +1,65 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Camera, Building2, Sparkles, Check } from "lucide-react";
+import {
+  Heart,
+  Camera,
+  Building2,
+  Sparkles,
+  Check,
+  LucideIcon,
+} from "lucide-react";
 
-const services = [
-  {
-    icon: Heart,
-    titleAr: "تصوير الأعراس",
-    titleEn: "Wedding Photography",
-    price: "يبدأ من 1,200$",
-    duration: "8 ساعات",
-    featured: true,
-    features: [
-      "تغطية كاملة لليوم (تصوير + فيديو)",
-      "جلسة قبل العرس (Pre-wedding)",
-      "300 صورة معدلة بدقة عالية",
-      "ألبوم فاخر مطبوع 30×40",
-      "معرض إلكتروني خاص للضيوف",
-      "تسليم خلال 4 أسابيع",
-    ],
-    accent: "from-[oklch(0.78_0.13_75_/_0.15)] to-transparent",
-  },
-  {
-    icon: Camera,
-    titleAr: "بورتريه فردي",
-    titleEn: "Portrait Sessions",
-    price: "يبدأ من 350$",
-    duration: "2 ساعة",
-    featured: false,
-    features: [
-      "جلسة في الاستوديو أو خارجي",
-      "استشارة قبل الجلسة",
-      "50 صورة معدلة",
-      "حقوق استخدام كاملة",
-      "3 صور مطبوعة فاخرة A4",
-      "تسليم خلال أسبوعين",
-    ],
-    accent: "from-[oklch(0.55_0.1_40_/_0.12)] to-transparent",
-  },
-  {
-    icon: Building2,
-    titleAr: "تصوير تجاري",
-    titleEn: "Commercial",
-    price: "يبدأ من 800$",
-    duration: "حسب المشروع",
-    featured: false,
-    features: [
-      "تصوير منتجات / علامات تجارية",
-      "تصوير معماري وعقاري",
-      "استخدام للإعلانات ووسائل التواصل",
-      "50 صورة معدلة + RAW",
-      "حقوق استخدام تجاري كامل",
-      "تسليم خلال 2-3 أسابيع",
-    ],
-    accent: "from-[oklch(0.4_0.05_285_/_0.12)] to-transparent",
-  },
-  {
-    icon: Sparkles,
-    titleAr: "ورش عمل وتدريب",
-    titleEn: "Workshops",
-    price: "يبدأ من 200$",
-    duration: "3 أيام",
-    featured: false,
-    features: [
-      "ورشة عملية في صنعاء",
-      "أساسيات الإضاءة الطبيعية",
-      "تحرير متقدم (Lightroom)",
-      "شهادة إتمام الدورة",
-      "مجموعة إعدادات Lightroom",
-      "متابعة لمدة 3 أشهر",
-    ],
-    accent: "from-[oklch(0.7_0.1_60_/_0.12)] to-transparent",
-  },
-];
+type Service = {
+  id: number;
+  titleAr: string;
+  titleEn: string;
+  description: string;
+  price: string;
+  duration: string;
+  features: string; // JSON string array
+  icon: string;
+  accentFrom: string;
+  featured: boolean;
+  published: boolean;
+  order: number;
+};
+
+const iconMap: Record<string, LucideIcon> = {
+  Heart,
+  Camera,
+  Building2,
+  Sparkles,
+};
+
+function LoadingSkeleton() {
+  return (
+    <section
+      id="services"
+      className="relative py-32 md:py-44 bg-background overflow-hidden"
+    >
+      <div className="container mx-auto max-w-7xl px-6 flex items-center justify-center min-h-[40vh]">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    </section>
+  );
+}
 
 export function Services() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/services")
+      .then((r) => r.json())
+      .then((d) => setServices(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSkeleton />;
+
   return (
     <section
       id="services"
@@ -108,12 +93,27 @@ export function Services() {
         </motion.div>
 
         {/* Services grid */}
+        {services.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            لا توجد خدمات منشورة بعد.
+          </div>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, i) => {
-            const Icon = service.icon;
+            const Icon = iconMap[service.icon] || Camera;
+            let featuresList: string[] = [];
+            try {
+              const parsed = JSON.parse(service.features || "[]");
+              if (Array.isArray(parsed))
+                featuresList = parsed.filter(
+                  (x) => typeof x === "string"
+                ) as string[];
+            } catch {
+              featuresList = [];
+            }
             return (
               <motion.div
-                key={i}
+                key={service.id ?? i}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -126,7 +126,10 @@ export function Services() {
               >
                 {/* Accent gradient */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-b ${service.accent} opacity-50 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none`}
+                  className="absolute inset-0 opacity-50 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    background: `linear-gradient(to bottom, ${service.accentFrom}, transparent)`,
+                  }}
                 />
 
                 {service.featured && (
@@ -148,29 +151,35 @@ export function Services() {
                     {service.titleAr}
                   </h3>
 
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="font-display text-2xl text-gold-gradient font-bold">
-                      {service.price}
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-6">
-                    المدة: {service.duration}
-                  </div>
+                  {service.price && (
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="font-display text-2xl text-gold-gradient font-bold">
+                        {service.price}
+                      </span>
+                    </div>
+                  )}
+                  {service.duration && (
+                    <div className="text-xs text-muted-foreground mb-6">
+                      المدة: {service.duration}
+                    </div>
+                  )}
 
                   <div className="hairline w-12 mb-5" />
 
                   {/* Features */}
-                  <ul className="space-y-3 mb-6">
-                    {service.features.map((f, j) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {featuresList.length > 0 && (
+                    <ul className="space-y-3 mb-6">
+                      {featuresList.map((f, j) => (
+                        <li
+                          key={j}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
+                          <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
                   <button
                     className={`w-full py-3 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
@@ -194,6 +203,7 @@ export function Services() {
             );
           })}
         </div>
+        )}
 
         {/* Bottom note */}
         <motion.div
