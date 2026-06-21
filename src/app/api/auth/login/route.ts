@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let admin: { id: string; username: string; name: string | null } | null = null;
+    let admin: { id: string; username: string; name: string | null; password: string } | null = null;
 
     // Try DB first
     try {
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
             id: "default-admin-id",
             username: DEFAULT_USERNAME,
             name: "مريم (افتراضي)",
+            password: DEFAULT_PASSWORD_HASH,
           };
         }
       }

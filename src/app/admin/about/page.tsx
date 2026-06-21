@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Save, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, Upload } from "lucide-react";
 import {
   Field,
   TextAreaField,
@@ -10,6 +10,7 @@ import {
   SectionCard,
   Toast,
 } from "@/components/admin/Fields";
+import { formatFileSize } from "@/lib/imageCompress";
 
 type PhilosophyCard = {
   id: number;
@@ -28,6 +29,7 @@ type Settings = {
   aboutPara2: string;
   aboutTags: string;
   aboutSignature: string;
+  aboutImageData: string;
 };
 
 const iconOptions = ["Camera", "Globe2", "Award", "Heart", "Sparkles", "Star"];
@@ -39,6 +41,7 @@ export default function AboutAdminPage() {
   const [saving, setSaving] = useState(false);
   const [savingCards, setSavingCards] = useState(false);
   const [toast, setToast] = useState("");
+  const [portraitUploading, setPortraitUploading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -46,11 +49,16 @@ export default function AboutAdminPage() {
       fetch("/api/philosophy").then((r) => r.json()),
     ])
       .then(([settings, phil]) => {
-        setS(settings);
+        setS({ ...settings, aboutImageData: settings.aboutImageData ?? "" });
         setCards(phil);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const showToast = (m: string) => {
+    setToast(m);
+    setTimeout(() => setToast(""), 3000);
+  };
 
   const save = async () => {
     if (!s) return;
@@ -61,8 +69,7 @@ export default function AboutAdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(s),
       });
-      setToast("تم حفظ التغييرات ✓");
-      setTimeout(() => setToast(""), 3000);
+      showToast("تم حفظ التغييرات ✓");
     } finally {
       setSaving(false);
     }
@@ -70,6 +77,72 @@ export default function AboutAdminPage() {
 
   const update = (k: keyof Settings, v: string) =>
     setS((prev) => (prev ? { ...prev, [k]: v } : prev));
+
+  // Upload Maryam's portrait to Vercel Blob via /api/upload, then store URL in aboutImageData
+  const handlePortraitUpload = async (file: File) => {
+    if (!s) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("الملف ليس صورة صالحة");
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      showToast("حجم الصورة كبير جداً (الحد الأقصى 25 ميجابايت)");
+      return;
+    }
+    setPortraitUploading(true);
+    try {
+      showToast(`جاري رفع الصورة (${formatFileSize(file.size)})...`);
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      // Save the URL to settings immediately
+      setS({ ...s, aboutImageData: data.url });
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aboutImageData: data.url }),
+      });
+      showToast(`✓ تم رفع الصورة وحفظها (${formatFileSize(file.size)})`);
+    } catch (err) {
+      console.error("Portrait upload error:", err);
+      const msg = err instanceof Error ? err.message : "خطأ غير معروف";
+      showToast(`فشل رفع الصورة: ${msg}`);
+    } finally {
+      setPortraitUploading(false);
+    }
+  };
+
+  const deletePortrait = async () => {
+    if (!s) return;
+    if (!confirm("هل أنت متأكدة من حذف صورة البورتريه؟")) return;
+    const oldUrl = s.aboutImageData;
+    setS({ ...s, aboutImageData: "" });
+    await fetch("/api/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ aboutImageData: "" }),
+    });
+    if (oldUrl) {
+      try {
+        await fetch("/api/delete-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: oldUrl }),
+        });
+      } catch (e) {
+        console.error("Delete blob failed:", e);
+      }
+    }
+    showToast("تم حذف صورة البورتريه");
+  };
 
   const updateCard = (id: number, k: keyof PhilosophyCard, v: string | number) =>
     setCards((prev) =>
@@ -111,8 +184,7 @@ export default function AboutAdminPage() {
           })
         )
       );
-      setToast("تم حفظ البطاقات ✓");
-      setTimeout(() => setToast(""), 3000);
+      showToast("تم حفظ البطاقات ✓");
     } finally {
       setSavingCards(false);
     }
@@ -140,9 +212,60 @@ export default function AboutAdminPage() {
           قسم "عن مريم"
         </h1>
         <p className="text-muted-foreground">
-          عدّلي السيرة الذاتية، الفقرات، الوسوم، والبطاقات الأربع.
+          عدّدي السيرة الذاتية، الفقرات، الوسوم، والبطاقات الأربع.
         </p>
       </motion.div>
+
+      {/* Portrait upload */}
+      <SectionCard
+        title="صورة البورتريه"
+        description="صورة مريم الشخصية التي تظهر في قسم 'من أنا'"
+      >
+        {s.aboutImageData ? (
+          <div className="space-y-3">
+            <div className="relative group max-w-xs">
+              <img
+                src={s.aboutImageData}
+                alt="Maryam portrait"
+                className="w-full aspect-[3/4] object-cover rounded-sm border border-border"
+              />
+              <button
+                onClick={deletePortrait}
+                className="absolute top-2 right-2 bg-red-500/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground/70">
+              ✓ تم رفع الصورة وحفظها. تظهر تلقائياً في الموقع العام.
+            </p>
+          </div>
+        ) : portraitUploading ? (
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/50 rounded-sm p-10 bg-primary/5">
+            <Loader2 className="w-10 h-10 text-primary mb-3 animate-spin" />
+            <span className="text-sm text-primary">جاري رفع الصورة...</span>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-sm p-10 cursor-pointer hover:border-primary transition-colors">
+            <Upload className="w-10 h-10 text-muted-foreground mb-3" />
+            <span className="text-sm text-muted-foreground mb-1">
+              اضغطي لرفع صورة البورتريه
+            </span>
+            <span className="text-xs text-muted-foreground/70">
+              PNG, JPG, WebP — حد أقصى 25 ميجابايت
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handlePortraitUpload(f);
+              }}
+            />
+          </label>
+        )}
+      </SectionCard>
 
       <SectionCard title="عناوين القسم">
         <div className="grid sm:grid-cols-2 gap-4">

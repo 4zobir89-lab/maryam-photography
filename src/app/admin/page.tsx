@@ -11,7 +11,67 @@ import {
   TrendingUp,
   Plus,
   ArrowLeft,
+  Edit3,
+  Trash2,
+  LogIn,
+  Activity as ActivityIcon,
+  Settings as SettingsIcon,
 } from "lucide-react";
+
+type ActivityLog = {
+  id: number;
+  action: string;
+  entity: string;
+  entityId: string;
+  details: string;
+  username: string;
+  createdAt: string;
+};
+
+// Render a relative "time ago" string in Arabic (best-effort, no external dep)
+function timeAgo(dateStr: string): string {
+  const then = new Date(dateStr).getTime();
+  if (!then) return "";
+  const diffMs = Date.now() - then;
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 60) return "قبل لحظات";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `قبل ${min} دقيقة`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `قبل ${hr} ساعة`;
+  const day = Math.floor(hr / 24);
+  if (day < 30) return `قبل ${day} يوم`;
+  const month = Math.floor(day / 30);
+  if (month < 12) return `قبل ${month} شهر`;
+  return `قبل ${Math.floor(month / 12)} سنة`;
+}
+
+// Pick an icon for an activity entry based on action
+function iconForAction(action: string) {
+  const a = action.toLowerCase();
+  if (a.includes("create") || a === "create") return Plus;
+  if (a.includes("update") || a === "update") return Edit3;
+  if (a.includes("delete") || a === "delete") return Trash2;
+  if (a.includes("login") || a === "login") return LogIn;
+  if (a.includes("import") || a === "import") return ActivityIcon;
+  if (a.includes("reset") || a === "reset") return ActivityIcon;
+  return SettingsIcon;
+}
+
+// Friendly Arabic label for an entity
+function labelForEntity(entity: string): string {
+  switch (entity) {
+    case "project": return "عمل";
+    case "projectImage": return "صورة معرض";
+    case "service": return "خدمة";
+    case "testimonial": return "رأي عميل";
+    case "philosophy": return "بطاقة فلسفة";
+    case "settings": return "الإعدادات";
+    case "admin": return "الحساب";
+    case "data": return "البيانات";
+    default: return entity;
+  }
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -21,6 +81,8 @@ export default function AdminDashboard() {
     featured: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -37,6 +99,12 @@ export default function AdminDashboard() {
         });
       })
       .finally(() => setLoading(false));
+
+    fetch("/api/activity")
+      .then((r) => r.json())
+      .then((data) => setActivities(Array.isArray(data) ? data.slice(0, 8) : []))
+      .catch(() => setActivities([]))
+      .finally(() => setActivityLoading(false));
   }, []);
 
   const cards = [
@@ -161,26 +229,53 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* Tip */}
+      {/* Recent activity */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="glass-card p-6 rounded-sm"
+        className="bg-card border border-border/60 rounded-sm p-6"
       >
-        <div className="flex items-start gap-4">
-          <div className="text-2xl">💡</div>
-          <div>
-            <h3 className="font-amiri text-lg text-foreground mb-2">
-              نصيحة سريعة
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              كل تعديل تقومين به يُحفظ مباشرة ويظهر على الموقع. لا حاجة
-              للنشر يدوياً. يمكنك تجربة أي تعديل ثم معاينة الموقع عبر زر
-              "عرض الموقع" في الأعلى.
-            </p>
-          </div>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-amiri text-2xl text-foreground flex items-center gap-2">
+            <ActivityIcon className="w-5 h-5 text-primary" />
+            النشاط الأخير
+          </h2>
         </div>
+        {activityLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            لا يوجد نشاط مسجّل بعد. ابدئي بتعديل المحتوى ليظهر هنا.
+          </div>
+        ) : (
+          <ul className="space-y-1">
+            {activities.map((a) => {
+              const Icon = iconForAction(a.action);
+              return (
+                <li
+                  key={a.id}
+                  className="flex items-start gap-3 py-3 border-b border-border/40 last:border-0"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-foreground">
+                      <span className="font-medium">{labelForEntity(a.entity)}</span>{" "}
+                      <span className="text-muted-foreground">— {a.details || a.action}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground/70 mt-0.5">
+                      @{a.username} · {timeAgo(a.createdAt)}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </motion.div>
     </div>
   );

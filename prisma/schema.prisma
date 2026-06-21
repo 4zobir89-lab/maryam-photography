@@ -42,6 +42,10 @@ model SiteSettings {
   aboutPara2      String   @default("درست الفنون البصرية في دبي، وعملت لاحقًا مع منصات دولية مثل National Geographic Arabia و Magnum Photos. لكنها بقيت وفية لجذورها.")
   aboutTags       String   @default("بورتريه,تصوير أعراس,تصوير ثقافي,فوتوجورناليزم,تصوير معماري")
   aboutSignature  String   @default("~ مريم")
+  // About portrait image (Maryam's photo) — Vercel Blob URL
+  aboutImageData  String   @default("")
+  // Hero background image (optional) — Vercel Blob URL
+  heroImageData   String   @default("")
   // Section titles
   portfolioTitleAr    String @default("معرض الأعمال")
   portfolioSubtitleEn String @default("Selected Works")
@@ -88,9 +92,36 @@ model Project {
   published   Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  images      ProjectImage[]
 
   @@index([category])
   @@index([published])
+}
+
+// ===== Additional images per project (gallery) =====
+model ProjectImage {
+  id          Int      @id @default(autoincrement())
+  projectId   Int
+  url         String   // Vercel Blob URL
+  caption     String   @default("")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+// ===== Activity Log (recent admin actions) =====
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String   // create | update | delete | login | logout
+  entity    String   // project | service | testimonial | settings | philosophy | admin
+  entityId  String   @default("")
+  details   String   @default("")
+  username  String   @default("maryam")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ===== Services =====

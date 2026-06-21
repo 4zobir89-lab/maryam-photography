@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { defaultProjects } from "@/lib/defaultData";
 
 // GET — public, returns published projects
@@ -58,6 +59,13 @@ export async function POST(req: NextRequest) {
         published: body.published ?? true,
       },
     });
+    await logActivity(
+      "create",
+      "project",
+      String(project.id),
+      `Created project "${project.titleAr}"`,
+      session.username
+    );
     return NextResponse.json(project, { status: 201 });
   } catch (e) {
     console.error("Create project error:", e);

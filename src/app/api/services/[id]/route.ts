@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 export async function PUT(
   req: NextRequest,
@@ -25,6 +26,13 @@ export async function PUT(
       where: { id: parseInt(id) },
       data,
     });
+    await logActivity(
+      "update",
+      "service",
+      String(service.id),
+      `Updated service "${service.titleAr}"`,
+      session.username
+    );
     return NextResponse.json(service);
   } catch (e) {
     console.error("Update service error:", e);
@@ -42,7 +50,18 @@ export async function DELETE(
   }
   try {
     const { id } = await params;
+    const existing = await db.service.findUnique({
+      where: { id: parseInt(id) },
+      select: { id: true, titleAr: true },
+    });
     await db.service.delete({ where: { id: parseInt(id) } });
+    await logActivity(
+      "delete",
+      "service",
+      String(id),
+      `Deleted service "${existing?.titleAr ?? ""}"`,
+      session.username
+    );
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("Delete service error:", e);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { defaultSettings } from "@/lib/defaultData";
 
 export async function GET() {
@@ -38,6 +39,7 @@ export async function PUT(req: NextRequest) {
       "contactInstagram", "contactWhatsapp",
       "footerDesc", "footerCopyright",
       "primaryColor", "backgroundColor",
+      "aboutImageData", "heroImageData",
     ];
     const data: Record<string, unknown> = {};
     for (const f of allowedFields) {
@@ -48,6 +50,7 @@ export async function PUT(req: NextRequest) {
       update: data,
       create: { id: 1, ...data },
     });
+    await logActivity("update", "settings", "1", `Updated ${Object.keys(data).join(", ")}`, session.username);
     return NextResponse.json(updated);
   } catch (e) {
     console.error("Update settings error:", e);

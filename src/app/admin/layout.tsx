@@ -17,6 +17,8 @@ import {
   X,
   Sparkles,
   Mail,
+  Shield,
+  Database,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +30,8 @@ const navItems = [
   { href: "/admin/testimonials", labelAr: "آراء العملاء", icon: MessageSquare },
   { href: "/admin/contact", labelAr: "التواصل والفوتر", icon: Mail },
   { href: "/admin/settings", labelAr: "الإعدادات", icon: Settings },
+  { href: "/admin/account", labelAr: "الحساب والأمان", icon: Shield },
+  { href: "/admin/data", labelAr: "البيانات والنسخ", icon: Database },
 ];
 
 export default function AdminLayout({

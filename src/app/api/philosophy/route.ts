@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { defaultPhilosophy } from "@/lib/defaultData";
 
 export async function GET() {
@@ -32,6 +33,13 @@ export async function POST(req: NextRequest) {
         order: body.order ?? (maxOrder._max.order || 0) + 1,
       },
     });
+    await logActivity(
+      "create",
+      "philosophy",
+      String(item.id),
+      `Created philosophy card "${item.titleAr}"`,
+      session.username
+    );
     return NextResponse.json(item, { status: 201 });
   } catch (e) {
     console.error("Create philosophy error:", e);

@@ -112,3 +112,111 @@ Every section component was already a client component (`"use client"`). For eac
 - Optionally wire the `footerLinks` Connect column (email/phone/address) to settings too — left hardcoded for now since the spec didn't request it.
 - Optionally make the Testimonials stats bar (`+250 عميل سعيد` etc.) dynamic from settings — currently still hardcoded.
 
+---
+
+## admin-enhancements-batch — 2025
+
+**Agent:** general-purpose
+**Task:** Add enhanced admin features: gallery images per project, activity log, change password, data export/import/reset, About portrait upload, Projects search+filter, account & data admin pages, dashboard activity feed, plus Vercel Blob cleanup on image replacement/delete.
+
+### Context
+The Prisma schema already had new models (`ProjectImage`, `ActivityLog`) and new fields on `SiteSettings` (`aboutImageData`, `heroImageData`) and a `Project.images` relation. No Prisma client regeneration had been run, so `db.projectImage` / `db.activityLog` were undefined — first task was to run `npx prisma generate`.
+
+### Files Created
+
+1. **`src/lib/activity.ts`** — Tiny helper that writes a row to `ActivityLog`. All failures are swallowed (`console.error` only) so activity logging never breaks the calling request. Signature: `logActivity(action, entity, entityId="", details="", username="maryam")`.
+
+2. **`src/app/api/activity/route.ts`** — `GET` admin-only, returns last 20 activity logs newest-first.
+
+3. **`src/app/api/projects/[id]/images/route.ts`** — `GET` public (list gallery for a project, ordered by `order` then `id`); `POST` admin-only, creates a `ProjectImage` row from `{ url, caption?, order? }`. Verifies the parent project exists before creating. Auto-increments `order` based on max existing. Logs `create/projectImage`.
+
+4. **`src/app/api/projects/[id]/images/[imageId]/route.ts`** — `PATCH` admin-only (update `caption` / `order`); `DELETE` admin-only (deletes DB row + Vercel Blob if URL contains `vercel-storage.com`). Logs `delete/projectImage`.
+
+5. **`src/app/api/auth/change-password/route.ts`** — `POST` admin-only. Verifies `currentPassword` against DB hash (or the default hash fallback `maryam2024` if no DB row). Validates `newPassword.length >= 6`. Hashes new password with `bcrypt.hash(newPassword, 10)`. Tries `db.adminUser.update` first; if no row exists, falls back to `db.adminUser.upsert` to create one. Logs `update/admin`.
+
+6. **`src/app/api/data/export/route.ts`** — `GET` admin-only. Runs 5 parallel `Promise.all` queries (`siteSettings`, `project.findMany({ include: images })`, services, testimonials, philosophy). Returns `{ exportedAt, version, settings, projects, services, testimonials, philosophy }`.
+
+7. **`src/app/api/data/import/route.ts`** — `POST` admin-only. Accepts the export JSON shape. Whitelists settings fields (same list as the settings PUT, including the new `aboutImageData` / `heroImageData`). For each collection, does a delete-all then re-creates rows (in a `$transaction` for `projectImage` + `project` to respect the FK). Gallery images are nested inside each project and re-created against the newly-generated project id. Logs `import/data` with a count summary.
+
+8. **`src/app/api/data/reset/route.ts`** — `POST` admin-only (not in original spec but referenced by the data admin page's "Reset to Defaults" button). Wipes all collections + settings and re-seeds from `src/lib/defaultData.ts`. Logs `reset/data`.
+
+9. **`src/app/admin/account/page.tsx`** — Three password fields (current/new/confirm), all type=password. Client-side validation: all required, new===confirm, new length >= 6. POSTs to `/api/auth/change-password`. Uses `Field`, `SaveButton`, `SectionCard`, `Toast`. Includes a "Security tips" info card with `Shield`/`KeyRound` icons.
+
+10. **`src/app/admin/data/page.tsx`** — Three sections: Export (button → fetches `/api/data/export`, builds a `Blob`, triggers a browser download named `maryam-cms-backup-YYYY-MM-DD.json`); Import (file input + warning panel + double-confirm via `confirm()` before POSTing to `/api/data/import`, shows resulting counts in Toast); Danger Zone (red reset button with TWO `confirm()` dialogs before POSTing to `/api/data/reset`). Plus an info card explaining backup strategy.
+
+### Files Modified
+
+11. **`src/app/api/settings/route.ts`** — Added `aboutImageData`, `heroImageData` to `allowedFields`. Imported `logActivity` and call it after the upsert with `Object.keys(data).join(", ")` as the details string.
+
+12. **`src/app/api/projects/route.ts`** — Imported `logActivity`. Logs `create/project` after `db.project.create` with the new project's title in details.
+
+13. **`src/app/api/projects/[id]/route.ts`** — Major rewrite:
+    - Imported `del` from `@vercel/blob` and `logActivity`.
+    - Added `deleteBlobIfVercel(url)` helper that only deletes if URL contains `vercel-storage.com`, wrapped in try/catch.
+    - PUT: when `imageData` is in the body and differs from the existing value, fetches the existing project first, then deletes the old blob.
+    - DELETE: fetches project + gallery images BEFORE deleting (so we have the URLs), deletes the project (cascade removes `ProjectImage` rows), then deletes the main image blob AND each gallery image blob. Logs `update/project` and `delete/project` respectively.
+
+14. **`src/app/api/services/route.ts`** + **`[id]/route.ts`** — Added `logActivity` calls on POST (`create/service`), PUT (`update/service`), DELETE (`delete/service`). DELETE fetches the title first so it can be in the log details.
+
+15. **`src/app/api/testimonials/route.ts`** + **`[id]/route.ts`** — Same pattern as services, entities are `testimonial`.
+
+16. **`src/app/api/philosophy/route.ts`** + **`[id]/route.ts`** — Same pattern, entities are `philosophy`.
+
+17. **`src/app/api/auth/login/route.ts`** — Minor pre-existing TS fix: widened the local `admin` type annotation to include `password: string` (was previously missing, causing a TS2339 on `admin.password`). Added `password: DEFAULT_PASSWORD_HASH` to the default-admin fallback object too.
+
+18. **`src/app/admin/about/page.tsx`** — Added a new top-of-page SectionCard "صورة البورتريه" above the bio sections. Has three states: existing portrait (shows `aspect-[3/4]` preview with a hover-to-reveal red trash button that calls `/api/delete-image` and clears `aboutImageData`); uploading (spinner); empty (dashed upload dropzone). Upload flow: `FormData` → `/api/upload` → `data.url` → immediately PUT to `/api/settings` with `{ aboutImageData }`. Extended the local `Settings` type with `aboutImageData: string`. Added `Upload` icon to imports; added `formatFileSize` import from `@/lib/imageCompress` for the upload toast.
+
+19. **`src/app/admin/projects/page.tsx`** — Three additions:
+    - **Search bar**: text input at the top filters by `titleAr`, `titleEn`, `location` (case-insensitive). Includes a `Search` icon on the right (RTL layout).
+    - **Category filter dropdown**: `<select>` with options `all` + the 4 categories. Combined with search via `filteredProjects`.
+    - **Gallery section in editor modal**: only shown when `editing.id !== 0` (existing project). When opening the editor for an existing project, fetches `/api/projects/{id}/images` into a `gallery` state. "Add gallery image" button is a `<label>` wrapping a hidden file input — uploads via `/api/upload`, then POSTs `{ url, caption: "" }` to `/api/projects/{id}/images`, appends to gallery state. Each gallery thumbnail is a square image with a hover-trash (DELETE) and a caption text input that PATCHes on blur. For new (unsaved) projects, shows an info note that gallery is available after first save. Confirms project deletion with a stronger message warning about gallery image cleanup.
+
+20. **`src/app/admin/layout.tsx`** — Added `Shield` and `Database` to the lucide imports. Appended two new nav items to `navItems`: `{ href: "/admin/account", labelAr: "الحساب والأمان", icon: Shield }` after settings, and `{ href: "/admin/data", labelAr: "البيانات والنسخ", icon: Database }` after account.
+
+21. **`src/app/admin/page.tsx`** — Replaced the bottom "Tip" card with a "Recent Activity" section. Fetches `/api/activity` on mount (alongside the existing stats fetches), takes the first 8 entries. Renders each as a list item with:
+    - An icon picked from the action string via `iconForAction` (`create`→`Plus`, `update`→`Edit3`, `delete`→`Trash2`, `login`→`LogIn`, `import`/`reset`→`Activity`, default→`Settings`).
+    - A friendly Arabic entity label via `labelForEntity` (project→"عمل", projectImage→"صورة معرض", service→"خدمة", testimonial→"رأي عميل", philosophy→"بطاقة فلسفة", settings→"الإعدادات", admin→"الحساب", data→"البيانات").
+    - A relative time-ago string in Arabic via a small `timeAgo` helper ("قبل لحظات", "قبل X دقيقة", "قبل X ساعة", "قبل X يوم", "قبل X شهر", "قبل X سنة").
+    - `@username` displayed underneath.
+    Empty state shows a "لا يوجد نشاط مسجّل بعد" message; loading state shows the gold spinner.
+
+### Patterns Followed
+- All new admin API routes check `getSession()` and return 401 if missing.
+- All DB operations wrapped in try/catch with `console.error` + JSON error response.
+- `logActivity` called at the END of each successful mutation (after the DB write completes), so logs only record what actually happened.
+- `deleteBlobIfVercel` pattern: only deletes if URL contains `vercel-storage.com`; wraps `del(url)` in try/catch so a Blob API failure doesn't fail the user request.
+- Gallery image upload uses the existing `/api/upload` endpoint (FormData + Vercel Blob) for the file, then the new `/api/projects/[id]/images` POST to persist the URL — exactly the pattern the spec requested.
+- New admin pages follow the established pattern: `"use client"`, `motion.div` header with `initial/animate`, RTL inherited, `SectionCard` + `Toast` from `@/components/admin/Fields`, gold accent color.
+- Reset button uses TWO `confirm()` calls for added friction (this is a destructive, irreversible action).
+- The data export downloads as `maryam-cms-backup-YYYY-MM-DD.json` via a `Blob` + anchor `<a download>` — no server-side file writing needed.
+
+### Verification
+- `npx prisma generate` run first to pick up the new models (`ProjectImage`, `ActivityLog`) and the `Project.images` relation. Without this, every reference to `db.projectImage` / `db.activityLog` failed TS2339.
+- `npx tsc --noEmit` reports **0 errors** in any new/modified file. The only 5 remaining errors are all pre-existing and unrelated:
+  - `examples/websocket/frontend.tsx` and `examples/websocket/server.ts` (missing `socket.io` deps)
+  - `next.config.ts` (`eslint` not in `NextConfig` type — Next 16 change)
+  - `skills/image-edit/scripts/image-edit.ts` and `skills/stock-analysis-skill/src/analyzer.ts` (SDK type mismatches)
+- Also fixed a pre-existing TS error in `src/app/api/auth/login/route.ts` (the `admin` local type annotation was missing `password`).
+
+### Notes / Decisions
+- The reset endpoint (`/api/data/reset`) is NOT in the original spec's "Files to create" list, but task #10 references it ("POST to a reset endpoint"), so I created it for completeness. It re-uses `src/lib/defaultData.ts` as the source of truth for defaults.
+- The `change-password` route handles three scenarios: (a) DB row exists → update hash in place; (b) DB available but no row exists → upsert to create one (using the session's username); (c) DB not available → returns 500 with a clear Arabic error. This means the FIRST password change after deploy will silently create the admin row in the DB if it didn't exist yet.
+- The activity log records `username` from `session.username` (so if a future batch adds multi-admin support, logs will distinguish actors).
+- For the dashboard activity feed, I imported `Activity as ActivityIcon` and `Settings as SettingsIcon` to avoid name collisions with the existing `Settings` import (lucide `Settings` icon vs the `Settings` type used elsewhere — though the dashboard doesn't actually use a Settings type, this is defensive).
+- The About page portrait upload auto-saves the URL to settings immediately (so even if the user navigates away without clicking "Save changes", the portrait is persisted). This matches the spec wording "saves to `aboutImageData` in settings" and is more forgiving than requiring the user to also click the bottom Save button.
+- The projects gallery section calls `e.currentTarget.value = ""` after each upload so the same file can be re-selected if needed.
+
+### Next Actions
+- Smoke test in browser:
+  1. Login → confirm activity log entry appears on dashboard.
+  2. Open `/admin/about` → upload portrait → confirm it appears in the About section of the public site.
+  3. Open `/admin/projects` → use search and category filter → confirm filtering works.
+  4. Edit an existing project → upload gallery images → reload → confirm they persist; delete one → confirm blob is gone (check Vercel Blob dashboard).
+  5. Replace a project's main image → confirm old image is deleted from Blob (no orphaned blobs accumulating).
+  6. Delete a project with gallery images → confirm main + gallery blobs are all gone.
+  7. `/admin/account` → change password → logout → login with new password.
+  8. `/admin/data` → export → keep the JSON → make a small content change → import the JSON → confirm content reverts to exported state.
+  9. `/admin/data` → reset → confirm all content returns to defaults.
+- Consider running `prisma db push` to apply the schema changes (new `ProjectImage` + `ActivityLog` tables, new `aboutImageData` / `heroImageData` columns on `SiteSettings`) to the production DB if not already applied. The build script in `package.json` already calls `prisma db push` so a fresh deploy will handle this.
+- Optionally: surface the activity log on the `/admin/data` page too (e.g. show the last 5 imports/resets) — left for a future batch.
+

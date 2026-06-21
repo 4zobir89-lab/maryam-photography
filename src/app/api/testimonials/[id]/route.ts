@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 export async function PUT(
   req: NextRequest,
@@ -25,6 +26,13 @@ export async function PUT(
       where: { id: parseInt(id) },
       data,
     });
+    await logActivity(
+      "update",
+      "testimonial",
+      String(item.id),
+      `Updated testimonial from "${item.nameAr}"`,
+      session.username
+    );
     return NextResponse.json(item);
   } catch (e) {
     console.error("Update testimonial error:", e);
@@ -42,7 +50,18 @@ export async function DELETE(
   }
   try {
     const { id } = await params;
+    const existing = await db.testimonial.findUnique({
+      where: { id: parseInt(id) },
+      select: { id: true, nameAr: true },
+    });
     await db.testimonial.delete({ where: { id: parseInt(id) } });
+    await logActivity(
+      "delete",
+      "testimonial",
+      String(id),
+      `Deleted testimonial from "${existing?.nameAr ?? ""}"`,
+      session.username
+    );
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("Delete testimonial error:", e);

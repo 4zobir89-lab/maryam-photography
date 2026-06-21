@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { defaultTestimonials } from "@/lib/defaultData";
 
 export async function GET(req: NextRequest) {
@@ -46,6 +47,13 @@ export async function POST(req: NextRequest) {
         published: body.published ?? true,
       },
     });
+    await logActivity(
+      "create",
+      "testimonial",
+      String(item.id),
+      `Created testimonial from "${item.nameAr}"`,
+      session.username
+    );
     return NextResponse.json(item, { status: 201 });
   } catch (e) {
     console.error("Create testimonial error:", e);

@@ -13,6 +13,7 @@ import {
   Star,
   Eye,
   EyeOff,
+  Search,
 } from "lucide-react";
 import { Toast } from "@/components/admin/Fields";
 import { formatFileSize } from "@/lib/imageCompress";
@@ -34,6 +35,14 @@ type Project = {
   featured: boolean;
   order: number;
   published: boolean;
+};
+
+type GalleryImage = {
+  id: number;
+  projectId: number;
+  url: string;
+  caption: string;
+  order: number;
 };
 
 const categories = [
@@ -65,6 +74,13 @@ export default function ProjectsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Project | null>(null);
   const [toast, setToast] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+
+  // Gallery state (only relevant while editing an existing project)
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
 
   useEffect(() => {
     fetch("/api/projects?all=1")
@@ -97,6 +113,25 @@ export default function ProjectsAdminPage() {
       order: projects.length + 1,
       published: true,
     });
+    setGallery([]);
+  };
+
+  const openEditor = async (p: Project) => {
+    setEditing({ ...p });
+    if (p.id !== 0) {
+      setGalleryLoading(true);
+      try {
+        const res = await fetch(`/api/projects/${p.id}/images`);
+        const imgs = await res.json();
+        setGallery(Array.isArray(imgs) ? imgs : []);
+      } catch {
+        setGallery([]);
+      } finally {
+        setGalleryLoading(false);
+      }
+    } else {
+      setGallery([]);
+    }
   };
 
   const [imageUploading, setImageUploading] = useState(false);
@@ -107,7 +142,6 @@ export default function ProjectsAdminPage() {
       showToast("الملف ليس صورة صالحة");
       return;
     }
-    // Allow up to 25MB (Vercel Blob limit)
     if (file.size > 25 * 1024 * 1024) {
       showToast("حجم الصورة كبير جداً (الحد الأقصى 25 ميجابايت)");
       return;
@@ -116,7 +150,6 @@ export default function ProjectsAdminPage() {
     try {
       showToast(`جاري رفع الصورة (${formatFileSize(file.size)})...`);
 
-      // Upload via FormData to /api/upload (server-side uses Vercel Blob SDK)
       const formData = new FormData();
       formData.append("file", file);
 
@@ -131,7 +164,6 @@ export default function ProjectsAdminPage() {
       }
 
       const data = await res.json();
-      // Store the public URL in imageData field
       setEditing({ ...editing, imageData: data.url });
       showToast(`✓ تم رفع الصورة بدقة كاملة (${formatFileSize(file.size)})`);
     } catch (err) {
@@ -141,6 +173,77 @@ export default function ProjectsAdminPage() {
     } finally {
       setImageUploading(false);
     }
+  };
+
+  // Gallery image upload — upload to Blob, then POST to /api/projects/[id]/images
+  const handleGalleryUpload = async (file: File) => {
+    if (!editing || editing.id === 0) {
+      showToast("احفظي العمل أولاً قبل إضافة صور المعرض");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      showToast("الملف ليس صورة صالحة");
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      showToast("حجم الصورة كبير جداً (الحد الأقصى 25 ميجابايت)");
+      return;
+    }
+    setGalleryUploading(true);
+    try {
+      showToast(`جاري رفع صورة المعرض (${formatFileSize(file.size)})...`);
+      const formData = new FormData();
+      formData.append("file", file);
+      const upRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!upRes.ok) {
+        const err = await upRes.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${upRes.status}`);
+      }
+      const upData = await upRes.json();
+
+      const addRes = await fetch(`/api/projects/${editing.id}/images`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: upData.url, caption: "" }),
+      });
+      if (!addRes.ok) {
+        const err = await addRes.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${addRes.status}`);
+      }
+      const newImg = await addRes.json();
+      setGallery([...gallery, newImg]);
+      showToast("✓ تمت إضافة صورة المعرض");
+    } catch (err) {
+      console.error("Gallery upload error:", err);
+      const msg = err instanceof Error ? err.message : "خطأ غير معروف";
+      showToast(`فشل رفع صورة المعرض: ${msg}`);
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
+  const updateGalleryCaption = async (imageId: number, caption: string) => {
+    setGallery(gallery.map((g) => (g.id === imageId ? { ...g, caption } : g)));
+  };
+
+  const saveGalleryCaption = async (imageId: number, caption: string) => {
+    await fetch(`/api/projects/${editing?.id}/images/${imageId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caption }),
+    });
+  };
+
+  const deleteGalleryImage = async (imageId: number) => {
+    if (!confirm("هل أنت متأكدة من حذف هذه الصورة من المعرض؟")) return;
+    await fetch(`/api/projects/${editing?.id}/images/${imageId}`, {
+      method: "DELETE",
+    });
+    setGallery(gallery.filter((g) => g.id !== imageId));
+    showToast("تم حذف صورة المعرض");
   };
 
   const [saving, setSaving] = useState(false);
@@ -176,6 +279,7 @@ export default function ProjectsAdminPage() {
         );
       }
       setEditing(null);
+      setGallery([]);
       showToast("تم الحفظ بنجاح ✓");
     } catch (err) {
       console.error("Save error:", err);
@@ -193,11 +297,25 @@ export default function ProjectsAdminPage() {
   };
 
   const remove = async (id: number) => {
-    if (!confirm("هل أنت متأكد من حذف هذا العمل؟")) return;
+    if (!confirm("هل أنت متأكد من حذف هذا العمل؟ سيتم حذف صورة الغلاف وكل صور المعرض.")) return;
     await fetch(`/api/projects/${id}`, { method: "DELETE" });
     setProjects(projects.filter((p) => p.id !== id));
     showToast("تم الحذف");
   };
+
+  // Filtered view (search + category filter)
+  const filteredProjects = projects.filter((p) => {
+    const matchesCategory =
+      filterCategory === "all" || p.category === filterCategory;
+    if (!matchesCategory) return false;
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      p.titleAr.toLowerCase().includes(q) ||
+      p.titleEn.toLowerCase().includes(q) ||
+      p.location.toLowerCase().includes(q)
+    );
+  });
 
   if (loading) {
     return (
@@ -236,9 +354,35 @@ export default function ProjectsAdminPage() {
         </button>
       </motion.div>
 
+      {/* Search + filter */}
+      <div className="bg-card border border-border/60 rounded-sm p-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ابحثي بالعنوان (عربي/إنجليزي) أو الموقع..."
+            className="w-full pr-10 pl-3 py-2.5 bg-background/50 border border-border rounded-sm focus:outline-none focus:border-primary text-sm"
+          />
+        </div>
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="px-3 py-2.5 bg-background/50 border border-border rounded-sm focus:outline-none focus:border-primary text-sm min-w-[160px]"
+        >
+          <option value="all">كل الفئات</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.labelAr}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projects.map((p) => (
+        {filteredProjects.map((p) => (
           <div
             key={p.id}
             className="bg-card border border-border/60 rounded-sm overflow-hidden group"
@@ -290,7 +434,7 @@ export default function ProjectsAdminPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setEditing({ ...p })}
+                  onClick={() => openEditor(p)}
                   className="flex-1 flex items-center justify-center gap-2 py-2 border border-border rounded-sm hover:border-primary/40 hover:text-primary text-sm transition-colors"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -308,9 +452,11 @@ export default function ProjectsAdminPage() {
         ))}
       </div>
 
-      {projects.length === 0 && (
+      {filteredProjects.length === 0 && (
         <div className="text-center py-20 text-muted-foreground">
-          لا توجد أعمال بعد. اضغطي "إضافة عمل جديد" للبدء.
+          {projects.length === 0
+            ? "لا توجد أعمال بعد. اضغطي \"إضافة عمل جديد\" للبدء."
+            : "لا توجد نتائج مطابقة لبحثك."}
         </div>
       )}
 
@@ -323,7 +469,10 @@ export default function ProjectsAdminPage() {
                 {editing.id === 0 ? "إضافة عمل جديد" : "تعديل العمل"}
               </h2>
               <button
-                onClick={() => setEditing(null)}
+                onClick={() => {
+                  setEditing(null);
+                  setGallery([]);
+                }}
                 className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:border-primary"
               >
                 <X className="w-5 h-5" />
@@ -389,6 +538,93 @@ export default function ProjectsAdminPage() {
                   💡 إذا لم تُرفع صورة، سيتم استخدام تدرج لوني تلقائي
                 </p>
               </div>
+
+              {/* Gallery images — only for existing projects */}
+              {editing.id !== 0 && (
+                <div className="bg-card border border-border/60 rounded-sm p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-xs tracking-widest text-muted-foreground uppercase font-inter">
+                      صور المعرض ({gallery.length})
+                    </label>
+                    <label className="cursor-pointer flex items-center gap-2 px-3 py-1.5 border border-primary/40 text-primary rounded-sm hover:bg-primary/10 transition-colors text-xs">
+                      <Plus className="w-3.5 h-3.5" />
+                      إضافة صورة للمعرض
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleGalleryUpload(f);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  {galleryUploading && (
+                    <div className="flex items-center justify-center gap-3 py-6 border-2 border-dashed border-primary/40 rounded-sm bg-primary/5 mb-3">
+                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                      <span className="text-sm text-primary">
+                        جاري رفع صورة المعرض...
+                      </span>
+                    </div>
+                  )}
+
+                  {galleryLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                    </div>
+                  ) : gallery.length === 0 && !galleryUploading ? (
+                    <p className="text-sm text-muted-foreground/70 py-4 text-center">
+                      لا توجد صور في المعرض. اضغطي "إضافة صورة للمعرض" لبدء الرفع.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {gallery.map((img) => (
+                        <div
+                          key={img.id}
+                          className="space-y-1.5 group relative"
+                        >
+                          <div className="relative">
+                            <img
+                              src={img.url}
+                              alt={img.caption || "gallery image"}
+                              className="w-full aspect-square object-cover rounded-sm border border-border"
+                            />
+                            <button
+                              onClick={() => deleteGalleryImage(img.id)}
+                              className="absolute top-1 right-1 bg-red-500/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={img.caption}
+                            onChange={(e) =>
+                              updateGalleryCaption(img.id, e.target.value)
+                            }
+                            onBlur={(e) =>
+                              saveGalleryCaption(img.id, e.target.value)
+                            }
+                            placeholder="تعليق..."
+                            className="w-full px-2 py-1 text-xs bg-background/50 border border-border rounded-sm focus:outline-none focus:border-primary"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {editing.id === 0 && (
+                <div className="bg-card border border-dashed border-border rounded-sm p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    💡 صور المعرض متاحة بعد حفظ العمل لأول مرة.
+                  </p>
+                </div>
+              )}
 
               {/* Title & category */}
               <div className="bg-card border border-border/60 rounded-sm p-5 space-y-4">
@@ -629,7 +865,10 @@ export default function ProjectsAdminPage() {
               {/* Save */}
               <div className="flex items-center justify-end gap-3 sticky bottom-0 bg-background/80 backdrop-blur p-4 -mx-6 md:-mx-10 border-t border-border">
                 <button
-                  onClick={() => setEditing(null)}
+                  onClick={() => {
+                    setEditing(null);
+                    setGallery([]);
+                  }}
                   className="px-5 py-2.5 border border-border text-muted-foreground rounded-sm hover:text-foreground"
                 >
                   إلغاء
