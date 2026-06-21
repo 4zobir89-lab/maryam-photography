@@ -5,6 +5,28 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "regions": ["iad1"],
+  "functions": {
+    "src/app/api/projects/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/projects/[id]/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/services/route.ts": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "src/app/api/testimonials/route.ts": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "src/app/api/settings/route.ts": {
+      "maxDuration": 30,
+      "memory": 512
+    }
+  },
   "github": {
     "enabled": true,
     "silent": true,

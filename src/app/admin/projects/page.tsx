@@ -15,6 +15,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { Toast } from "@/components/admin/Fields";
+import { compressImage, formatFileSize } from "@/lib/imageCompress";
 
 type Project = {
   id: number;
@@ -98,18 +99,35 @@ export default function ProjectsAdminPage() {
     });
   };
 
+  const [imageUploading, setImageUploading] = useState(false);
+
   const handleImageUpload = async (file: File) => {
     if (!editing) return;
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("حجم الصورة يجب أن يكون أقل من 2 ميجابايت");
+    if (!file.type.startsWith("image/")) {
+      showToast("الملف ليس صورة صالحة");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setEditing({ ...editing, imageData: reader.result as string });
-    };
-    reader.readAsDataURL(file);
+    // Allow up to 10MB original file — will be compressed
+    if (file.size > 10 * 1024 * 1024) {
+      showToast("حجم الصورة كبير جداً (الحد الأقصى 10 ميجابايت)");
+      return;
+    }
+    setImageUploading(true);
+    try {
+      showToast(`جاري ضغط الصورة (${formatFileSize(file.size)})...`);
+      const compressed = await compressImage(file, 1200, 1200, 0.85);
+      setEditing({ ...editing, imageData: compressed });
+      const compressedSize = Math.round((compressed.length * 3) / 4 / 1024);
+      showToast(`✓ تم ضغط الصورة: ${formatFileSize(file.size)} → ${compressedSize}KB`);
+    } catch (err) {
+      console.error("Image compression error:", err);
+      showToast("فشل في معالجة الصورة. حاولي بصورة أخرى.");
+    } finally {
+      setImageUploading(false);
+    }
   };
+
+  const [saving, setSaving] = useState(false);
 
   const save = async () => {
     if (!editing) return;
@@ -117,6 +135,7 @@ export default function ProjectsAdminPage() {
       showToast("العنوان بالعربية مطلوب");
       return;
     }
+    setSaving(true);
     try {
       const method = editing.id === 0 ? "POST" : "PUT";
       const url =
@@ -128,7 +147,10 @@ export default function ProjectsAdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
       });
-      if (!res.ok) throw new Error("فشل");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
       const saved = await res.json();
       if (editing.id === 0) {
         setProjects([...projects, saved]);
@@ -139,8 +161,18 @@ export default function ProjectsAdminPage() {
       }
       setEditing(null);
       showToast("تم الحفظ بنجاح ✓");
-    } catch {
-      showToast("خطأ في الحفظ");
+    } catch (err) {
+      console.error("Save error:", err);
+      const msg = err instanceof Error ? err.message : "خطأ غير معروف";
+      if (msg.includes("413") || msg.includes("large") || msg.includes("big")) {
+        showToast("الصورة كبيرة جداً حتى بعد الضغط. حاولي صورة أصغر.");
+      } else if (msg.includes("401")) {
+        showToast("انتهت الجلسة. سجّلي الدخول مجدداً.");
+      } else {
+        showToast(`خطأ في الحفظ: ${msg}`);
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -304,6 +336,16 @@ export default function ProjectsAdminPage() {
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
+                ) : imageUploading ? (
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/50 rounded-sm p-10 bg-primary/5">
+                    <Loader2 className="w-10 h-10 text-primary mb-3 animate-spin" />
+                    <span className="text-sm text-primary mb-1">
+                      جاري معالجة الصورة...
+                    </span>
+                    <span className="text-xs text-muted-foreground/70">
+                      يتم ضغط الصورة تلقائياً قبل الرفع
+                    </span>
+                  </div>
                 ) : (
                   <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-sm p-10 cursor-pointer hover:border-primary transition-colors">
                     <Upload className="w-10 h-10 text-muted-foreground mb-3" />
@@ -311,7 +353,10 @@ export default function ProjectsAdminPage() {
                       اضغطي لرفع صورة
                     </span>
                     <span className="text-xs text-muted-foreground/70">
-                      PNG, JPG, WebP — حد أقصى 2 ميجابايت
+                      PNG, JPG, WebP — حد أقصى 10 ميجابايت
+                    </span>
+                    <span className="text-[10px] text-primary/60 mt-1">
+                      ✦ يتم ضغط الصور تلقائياً
                     </span>
                     <input
                       type="file"
@@ -575,10 +620,15 @@ export default function ProjectsAdminPage() {
                 </button>
                 <button
                   onClick={save}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" />
-                  حفظ العمل
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  {saving ? "جاري الحفظ..." : "حفظ العمل"}
                 </button>
               </div>
             </div>
