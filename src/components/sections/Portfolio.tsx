@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, Maximize2, X } from "lucide-react";
+import { Eye, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 type Project = {
   id: number;
@@ -164,6 +164,58 @@ export function Portfolio() {
   const [selected, setSelected] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
+  const [loadingGallery, setLoadingGallery] = useState(false);
+
+  const openProject = async (project: Project) => {
+    setSelected(project);
+    setCurrentImageIdx(0);
+    setGalleryImages([]);
+    // Build the list of images: cover first, then gallery images (if any)
+    const allImages: string[] = [];
+    if (project.imageData) allImages.push(project.imageData);
+
+    // Fetch gallery images
+    setLoadingGallery(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/images`);
+      if (res.ok) {
+        const imgs = await res.json();
+        for (const img of imgs) {
+          if (img.url && !allImages.includes(img.url)) {
+            allImages.push(img.url);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load gallery:", e);
+    } finally {
+      setLoadingGallery(false);
+    }
+    setGalleryImages(allImages);
+  };
+
+  const nextImage = () => {
+    if (galleryImages.length <= 1) return;
+    setCurrentImageIdx((i) => (i + 1) % galleryImages.length);
+  };
+  const prevImage = () => {
+    if (galleryImages.length <= 1) return;
+    setCurrentImageIdx((i) => (i - 1 + galleryImages.length) % galleryImages.length);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+      else if (e.key === "ArrowLeft") nextImage();
+      else if (e.key === "ArrowRight") prevImage();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected, galleryImages.length]);
 
   useEffect(() => {
     fetch("/api/projects")
@@ -254,45 +306,39 @@ export function Portfolio() {
         {filtered.length > 0 ? (
         <motion.div
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-[300px] md:auto-rows-[360px]"
+          className="columns-1 sm:columns-2 lg:columns-3 gap-4 md:gap-6 [column-fill:_balance]"
         >
           <AnimatePresence mode="popLayout">
             {filtered.map((project) => (
               <motion.button
                 key={project.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.5 }}
-                onClick={() => setSelected(project)}
-                className={`group relative overflow-hidden bg-card border border-border/40 rounded-sm cursor-pointer ${
-                  project.span === "wide"
-                    ? "md:col-span-2"
-                    : project.span === "tall"
-                    ? "md:row-span-2"
-                    : ""
-                }`}
+                onClick={() => openProject(project)}
+                className="group relative overflow-hidden bg-card border border-border/40 rounded-sm cursor-pointer mb-4 md:mb-6 break-inside-avoid w-full block"
               >
-                {/* Image / visual */}
-                <div className="absolute inset-0">
-                  {project.imageData ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={project.imageData}
-                      alt={project.titleAr}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  ) : (
+                {/* Image — natural aspect ratio */}
+                {project.imageData ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={project.imageData}
+                    alt={project.titleAr}
+                    className="w-full h-auto block"
+                  />
+                ) : (
+                  <div className="aspect-[4/3]">
                     <MotifSvg
                       motif={project.motif}
                       palette={paletteOf(project)}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
 
                 {/* Hover action */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -349,7 +395,7 @@ export function Portfolio() {
         </motion.div>
       </div>
 
-      {/* Lightbox modal */}
+      {/* Lightbox modal — redesigned with full image + gallery navigation */}
       <AnimatePresence>
         {selected && (
           <motion.div
@@ -357,73 +403,168 @@ export function Portfolio() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelected(null)}
-            className="fixed inset-0 z-[80] bg-background/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-10"
+            className="fixed inset-0 z-[80] bg-background/95 backdrop-blur-2xl flex flex-col overflow-y-auto"
           >
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute top-6 right-6 w-12 h-12 rounded-full border border-border flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors"
-              aria-label="إغلاق"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-5xl w-full grid md:grid-cols-2 gap-0 border border-border rounded-sm overflow-hidden bg-card"
-            >
-              <div className="relative aspect-[4/3] md:aspect-auto">
-                {selected.imageData ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={selected.imageData}
-                    alt={selected.titleAr}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                ) : (
-                  <MotifSvg
-                    motif={selected.motif}
-                    palette={paletteOf(selected)}
-                  />
+            {/* Top bar */}
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 md:p-6 bg-gradient-to-b from-background to-transparent">
+              <div className="flex items-center gap-3">
+                <span className="font-inter text-[10px] tracking-[0.4em] text-primary uppercase">
+                  {categories.find((c) => c.id === selected.category)?.labelEn}
+                </span>
+                {galleryImages.length > 1 && (
+                  <span className="text-xs text-muted-foreground">
+                    {currentImageIdx + 1} / {galleryImages.length}
+                  </span>
                 )}
               </div>
-              <div className="p-8 md:p-12 flex flex-col justify-center text-right">
-                <span className="font-inter text-[10px] tracking-[0.4em] text-primary uppercase mb-3">
-                  {categories.find((c) => c.id === selected.category)?.labelEn} · {selected.year}
-                </span>
-                <h3 className="font-amiri text-4xl md:text-5xl text-foreground mb-3">
-                  {selected.titleAr}
-                </h3>
-                <p className="font-display text-lg text-muted-foreground tracking-wider mb-6">
-                  {selected.titleEn}
-                </p>
-                <div className="hairline w-16 mb-6" />
-                <p className="text-muted-foreground leading-loose mb-6">
-                  {selected.description ||
-                    `صورة من سلسلة ${
-                      categories.find((c) => c.id === selected.category)?.labelAr || ""
-                    } التقطتها مريم في ${selected.location}. تجمع اللقطة بين الضوء الطبيعي والحركة العفوية لتوثيق لحظة لا تتكرر.`}
-                </p>
-                <div className="flex items-center gap-6 text-sm">
-                  <div>
-                    <div className="text-[10px] text-muted-foreground tracking-widest uppercase">
-                      الموقع
+              <button
+                onClick={() => setSelected(null)}
+                className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors"
+                aria-label="إغلاق"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Main image area */}
+            <div
+              className="flex-1 flex items-center justify-center p-4 md:p-10 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Previous button */}
+              {galleryImages.length > 1 && (
+                <button
+                  onClick={prevImage}
+                  className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/60 border border-border backdrop-blur flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors z-10"
+                  aria-label="السابق"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* Current image — natural size, max 90vh */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentImageIdx}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.25 }}
+                  className="relative max-w-6xl w-full flex items-center justify-center"
+                >
+                  {galleryImages[currentImageIdx] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={galleryImages[currentImageIdx]}
+                      alt={selected.titleAr}
+                      className="max-w-full max-h-[75vh] w-auto h-auto object-contain rounded-md shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : !selected.imageData ? (
+                    <div className="w-full max-w-2xl aspect-[4/3]">
+                      <MotifSvg
+                        motif={selected.motif}
+                        palette={paletteOf(selected)}
+                      />
                     </div>
-                    <div className="font-amiri text-foreground mt-1">
-                      {selected.location}
+                  ) : loadingGallery ? (
+                    <div className="flex items-center justify-center h-40">
+                      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    </div>
+                  ) : null}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Next button */}
+              {galleryImages.length > 1 && (
+                <button
+                  onClick={nextImage}
+                  className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/60 border border-border backdrop-blur flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors z-10"
+                  aria-label="التالي"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+            </div>
+
+            {/* Info panel — below image */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="border-t border-border bg-card/60 backdrop-blur p-6 md:p-10"
+            >
+              <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-start">
+                {/* Left: title + description */}
+                <div className="text-right">
+                  <span className="font-inter text-[10px] tracking-[0.4em] text-primary uppercase mb-3 block">
+                    {categories.find((c) => c.id === selected.category)?.labelEn} · {selected.year}
+                  </span>
+                  <h3 className="font-amiri text-3xl md:text-5xl text-foreground mb-2">
+                    {selected.titleAr}
+                  </h3>
+                  <p className="font-display text-base md:text-lg text-muted-foreground tracking-wider mb-4">
+                    {selected.titleEn}
+                  </p>
+                  <div className="hairline w-16 mb-4 mr-auto" />
+                  <p className="text-muted-foreground leading-loose text-sm md:text-base">
+                    {selected.description ||
+                      `صورة من سلسلة ${
+                        categories.find((c) => c.id === selected.category)?.labelAr || ""
+                      } التقطتها مريم في ${selected.location}. تجمع اللقطة بين الضوء الطبيعي والحركة العفوية لتوثيق لحظة لا تتكرر.`}
+                  </p>
+                </div>
+
+                {/* Right: meta + thumbnails */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-6 text-sm">
+                    <div>
+                      <div className="text-[10px] text-muted-foreground tracking-widest uppercase">
+                        الموقع
+                      </div>
+                      <div className="font-amiri text-foreground mt-1">
+                        {selected.location}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground tracking-widest uppercase">
+                        السنة
+                      </div>
+                      <div className="font-amiri text-foreground mt-1">
+                        {selected.year}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-[10px] text-muted-foreground tracking-widest uppercase">
-                      السنة
+
+                  {/* Thumbnails strip — if gallery has multiple images */}
+                  {galleryImages.length > 1 && (
+                    <div>
+                      <div className="text-[10px] text-muted-foreground tracking-widest uppercase mb-2">
+                        صور المعرض ({galleryImages.length})
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        {galleryImages.map((url, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setCurrentImageIdx(i)}
+                            className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${
+                              i === currentImageIdx
+                                ? "border-primary scale-105"
+                                : "border-transparent opacity-60 hover:opacity-100"
+                            }`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={`صورة ${i + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="font-amiri text-foreground mt-1">
-                      {selected.year}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </motion.div>

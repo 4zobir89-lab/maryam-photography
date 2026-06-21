@@ -334,6 +334,49 @@ export default function ProjectsAdminPage() {
     }
   };
 
+  // Delete cover image (with confirmation + Blob cleanup)
+  const [coverDeleteTarget, setCoverDeleteTarget] = useState<Project | null>(
+    null
+  );
+
+  const removeCoverImage = async () => {
+    if (!coverDeleteTarget || !editing) return;
+    const oldUrl = editing.imageData;
+    // Optimistically clear in UI
+    setEditing({ ...editing, imageData: "" });
+    try {
+      // Save to DB
+      const res = await fetch(`/api/projects/${editing.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editing, imageData: "" }),
+      });
+      if (!res.ok) throw new Error("فشل");
+      // Delete from Blob if it was a Vercel Blob URL
+      if (oldUrl && oldUrl.includes("vercel-storage.com")) {
+        await fetch("/api/delete-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: oldUrl }),
+        });
+      }
+      // Update list
+      setProjects(
+        projects.map((p) =>
+          p.id === editing.id ? { ...p, imageData: "" } : p
+        )
+      );
+      showToast("تم حذف صورة الغلاف ✓");
+    } catch (err) {
+      console.error("Cover delete error:", err);
+      // Restore on failure
+      setEditing({ ...editing, imageData: oldUrl });
+      showToast("خطأ في حذف الصورة");
+    } finally {
+      setCoverDeleteTarget(null);
+    }
+  };
+
   // Filtered view (search + category filter)
   const filteredProjects = projects.filter((p) => {
     const matchesCategory =
@@ -513,46 +556,83 @@ export default function ProjectsAdminPage() {
             <div className="space-y-5">
               {/* Image upload */}
               <div className="bg-card border border-border/60 rounded-sm p-5">
-                <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-3 font-inter">
-                  صورة العمل
-                </label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-xs tracking-widest text-muted-foreground uppercase font-inter">
+                    صورة العمل الرئيسية
+                  </label>
+                  {editing.imageData && (
+                    <span className="text-[10px] text-green-500 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      صورة مرفوعة
+                    </span>
+                  )}
+                </div>
+
                 {editing.imageData ? (
-                  <div className="relative group">
-                    <img
-                      src={editing.imageData}
-                      alt="preview"
-                      className="w-full aspect-video object-cover rounded-sm"
-                    />
-                    <button
-                      onClick={() =>
-                        setEditing({ ...editing, imageData: "" })
-                      }
-                      className="absolute top-2 right-2 bg-red-500/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div className="space-y-3">
+                    {/* Preview */}
+                    <div className="relative group overflow-hidden rounded-md border border-border/60">
+                      <img
+                        src={editing.imageData}
+                        alt="preview"
+                        className="w-full max-h-[400px] object-contain bg-background/40"
+                      />
+                      {/* Top right badge */}
+                      <div className="absolute top-3 left-3 bg-background/80 backdrop-blur px-2.5 py-1 rounded-full text-[10px] text-primary border border-primary/30">
+                        الصورة الحالية
+                      </div>
+                    </div>
+
+                    {/* Action buttons — always visible */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary rounded-md text-xs font-medium hover:bg-primary/20 transition-colors cursor-pointer">
+                        <Upload className="w-3.5 h-3.5" />
+                        تبديل الصورة
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleImageUpload(f);
+                          }}
+                        />
+                      </label>
+                      <button
+                        onClick={() => setCoverDeleteTarget(editing)}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-md text-xs font-medium hover:bg-red-500/20 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        حذف الصورة
+                      </button>
+                      <span className="text-[10px] text-muted-foreground/60 mr-auto">
+                        💡 يمكنك أيضاً الضغط على "تبديل" لاستبدالها بصورة أخرى
+                      </span>
+                    </div>
                   </div>
                 ) : imageUploading ? (
-                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/50 rounded-sm p-10 bg-primary/5">
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/50 rounded-md p-12 bg-primary/5">
                     <Loader2 className="w-10 h-10 text-primary mb-3 animate-spin" />
                     <span className="text-sm text-primary mb-1">
-                      جاري معالجة الصورة...
+                      جاري رفع الصورة...
                     </span>
                     <span className="text-xs text-muted-foreground/70">
-                      يتم ضغط الصورة تلقائياً قبل الرفع
+                      يتم الحفظ بدقة كاملة عبر Vercel Blob
                     </span>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-sm p-10 cursor-pointer hover:border-primary transition-colors">
-                    <Upload className="w-10 h-10 text-muted-foreground mb-3" />
-                    <span className="text-sm text-muted-foreground mb-1">
-                      اضغطي لرفع صورة
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-md p-12 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                      <Upload className="w-6 h-6 text-primary" />
+                    </div>
+                    <span className="text-sm text-foreground mb-1 font-medium">
+                      اضغطي لرفع صورة العمل
                     </span>
-                    <span className="text-xs text-muted-foreground/70">
+                    <span className="text-xs text-muted-foreground/70 mb-2">
                       PNG, JPG, WebP — حد أقصى 25 ميجابايت
                     </span>
-                    <span className="text-[10px] text-primary/60 mt-1">
-                      ✦ الصور تُحفظ بدقة كاملة عبر Vercel Blob
+                    <span className="text-[10px] text-primary/60">
+                      ✦ تُحفظ بدقة كاملة عبر Vercel Blob
                     </span>
                     <input
                       type="file"
@@ -948,6 +1028,18 @@ export default function ProjectsAdminPage() {
         danger
         onConfirm={removeGalleryImage}
         onCancel={() => setGalleryDeleteTarget(null)}
+      />
+
+      {/* Delete cover image confirmation */}
+      <ConfirmDialog
+        open={!!coverDeleteTarget}
+        title="حذف صورة الغلاف"
+        message="هل أنت متأكدة من حذف صورة الغلاف؟ سيتم استخدام تدرج لوني تلقائي بدلاً منها، ويمكنك رفع صورة جديدة في أي وقت."
+        confirmText="نعم، احذفي الصورة"
+        cancelText="إبقاء الصورة"
+        danger
+        onConfirm={removeCoverImage}
+        onCancel={() => setCoverDeleteTarget(null)}
       />
 
       <Toast message={toast} />
