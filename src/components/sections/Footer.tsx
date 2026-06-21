@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Instagram, MessageCircle, Mail, ArrowUp } from "lucide-react";
+import { Instagram, MessageCircle, Mail, ArrowUp, Heart, Code2 } from "lucide-react";
 
 type Settings = {
   siteNameAr: string;
@@ -231,6 +231,32 @@ export function Footer() {
             </button>
           </div>
         </div>
+
+        {/* Developer signature */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+          className="mt-10 pt-6 border-t border-border/30"
+        >
+          <a
+            href="https://wa.me/967778140990?text=السلام%20عليكم%20وسيم،%20شفت%20موقع%20مريم%20وأعجبني%20عملك"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+            dir="rtl"
+          >
+            <Code2 className="w-3.5 h-3.5 text-primary/60 group-hover:text-primary transition-colors" />
+            <span>صُمّم بكل</span>
+            <Heart className="w-3.5 h-3.5 fill-red-500/80 text-red-500/80 group-hover:scale-110 transition-transform" />
+            <span>وبرمج بواسطة</span>
+            <span className="font-amiri text-sm text-primary font-medium group-hover:underline underline-offset-4 transition-all">
+              وسيم الزبيري
+            </span>
+            <MessageCircle className="w-3 h-3 text-green-500/70 group-hover:text-green-500 transition-colors" />
+          </a>
+        </motion.div>
       </div>
     </footer>
   );

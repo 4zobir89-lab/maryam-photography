@@ -16,6 +16,7 @@ import {
   Search,
 } from "lucide-react";
 import { Toast } from "@/components/admin/Fields";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { formatFileSize } from "@/lib/imageCompress";
 
 type Project = {
@@ -238,12 +239,8 @@ export default function ProjectsAdminPage() {
   };
 
   const deleteGalleryImage = async (imageId: number) => {
-    if (!confirm("هل أنت متأكدة من حذف هذه الصورة من المعرض؟")) return;
-    await fetch(`/api/projects/${editing?.id}/images/${imageId}`, {
-      method: "DELETE",
-    });
-    setGallery(gallery.filter((g) => g.id !== imageId));
-    showToast("تم حذف صورة المعرض");
+    // legacy — replaced by ConfirmDialog + removeGalleryImage
+    setGalleryDeleteTarget(gallery.find((g) => g.id === imageId) || null);
   };
 
   const [saving, setSaving] = useState(false);
@@ -296,11 +293,45 @@ export default function ProjectsAdminPage() {
     }
   };
 
-  const remove = async (id: number) => {
-    if (!confirm("هل أنت متأكد من حذف هذا العمل؟ سيتم حذف صورة الغلاف وكل صور المعرض.")) return;
-    await fetch(`/api/projects/${id}`, { method: "DELETE" });
-    setProjects(projects.filter((p) => p.id !== id));
-    showToast("تم الحذف");
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+
+  const remove = async () => {
+    if (!deleteTarget) return;
+    try {
+      const res = await fetch(`/api/projects/${deleteTarget.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("فشل الحذف");
+      setProjects(projects.filter((p) => p.id !== deleteTarget.id));
+      showToast("تم حذف العمل وجميع صوره ✓");
+    } catch (err) {
+      console.error("Delete error:", err);
+      showToast("خطأ في الحذف");
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  // Delete gallery image (with confirmation)
+  const [galleryDeleteTarget, setGalleryDeleteTarget] = useState<{
+    id: number;
+    url: string;
+    caption?: string;
+  } | null>(null);
+
+  const removeGalleryImage = async () => {
+    if (!galleryDeleteTarget || !editing) return;
+    try {
+      const res = await fetch(
+        `/api/projects/${editing.id}/images/${galleryDeleteTarget.id}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("فشل");
+      setGallery(gallery.filter((g) => g.id !== galleryDeleteTarget.id));
+      showToast("تم حذف الصورة من المعرض ✓");
+    } catch {
+      showToast("خطأ في حذف الصورة");
+    } finally {
+      setGalleryDeleteTarget(null);
+    }
   };
 
   // Filtered view (search + category filter)
@@ -441,7 +472,7 @@ export default function ProjectsAdminPage() {
                   تعديل
                 </button>
                 <button
-                  onClick={() => remove(p.id)}
+                  onClick={() => setDeleteTarget(p)}
                   className="p-2 border border-border rounded-sm text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -593,8 +624,8 @@ export default function ProjectsAdminPage() {
                               className="w-full aspect-square object-cover rounded-sm border border-border"
                             />
                             <button
-                              onClick={() => deleteGalleryImage(img.id)}
-                              className="absolute top-1 right-1 bg-red-500/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setGalleryDeleteTarget(img)}
+                              className="absolute top-1 right-1 bg-red-500/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -890,6 +921,34 @@ export default function ProjectsAdminPage() {
           </div>
         </div>
       )}
+
+      {/* Delete project confirmation */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="حذف العمل"
+        message={
+          deleteTarget
+            ? `هل أنت متأكدة من حذف "${deleteTarget.titleAr}"؟ سيتم حذف صورة الغلاف وجميع صور المعرض نهائياً.`
+            : ""
+        }
+        confirmText="نعم، احذفي"
+        cancelText="إلغاء"
+        danger
+        onConfirm={remove}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* Delete gallery image confirmation */}
+      <ConfirmDialog
+        open={!!galleryDeleteTarget}
+        title="حذف الصورة من المعرض"
+        message="هل أنت متأكدة من حذف هذه الصورة من المعرض؟ لا يمكن التراجع."
+        confirmText="حذف الصورة"
+        cancelText="إبقاء"
+        danger
+        onConfirm={removeGalleryImage}
+        onCancel={() => setGalleryDeleteTarget(null)}
+      />
 
       <Toast message={toast} />
     </div>
