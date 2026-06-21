@@ -15,7 +15,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { Toast } from "@/components/admin/Fields";
-import { compressImage, formatFileSize } from "@/lib/imageCompress";
+import { formatFileSize } from "@/lib/imageCompress";
 
 type Project = {
   id: number;
@@ -107,21 +107,37 @@ export default function ProjectsAdminPage() {
       showToast("الملف ليس صورة صالحة");
       return;
     }
-    // Allow up to 10MB original file — will be compressed
-    if (file.size > 10 * 1024 * 1024) {
-      showToast("حجم الصورة كبير جداً (الحد الأقصى 10 ميجابايت)");
+    // Allow up to 25MB (Vercel Blob limit)
+    if (file.size > 25 * 1024 * 1024) {
+      showToast("حجم الصورة كبير جداً (الحد الأقصى 25 ميجابايت)");
       return;
     }
     setImageUploading(true);
     try {
-      showToast(`جاري ضغط الصورة (${formatFileSize(file.size)})...`);
-      const compressed = await compressImage(file, 1200, 1200, 0.85);
-      setEditing({ ...editing, imageData: compressed });
-      const compressedSize = Math.round((compressed.length * 3) / 4 / 1024);
-      showToast(`✓ تم ضغط الصورة: ${formatFileSize(file.size)} → ${compressedSize}KB`);
+      showToast(`جاري رفع الصورة (${formatFileSize(file.size)})...`);
+
+      // Upload via FormData to /api/upload (server-side uses Vercel Blob SDK)
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      // Store the public URL in imageData field
+      setEditing({ ...editing, imageData: data.url });
+      showToast(`✓ تم رفع الصورة بدقة كاملة (${formatFileSize(file.size)})`);
     } catch (err) {
-      console.error("Image compression error:", err);
-      showToast("فشل في معالجة الصورة. حاولي بصورة أخرى.");
+      console.error("Image upload error:", err);
+      const msg = err instanceof Error ? err.message : "خطأ غير معروف";
+      showToast(`فشل رفع الصورة: ${msg}`);
     } finally {
       setImageUploading(false);
     }
@@ -353,10 +369,10 @@ export default function ProjectsAdminPage() {
                       اضغطي لرفع صورة
                     </span>
                     <span className="text-xs text-muted-foreground/70">
-                      PNG, JPG, WebP — حد أقصى 10 ميجابايت
+                      PNG, JPG, WebP — حد أقصى 25 ميجابايت
                     </span>
                     <span className="text-[10px] text-primary/60 mt-1">
-                      ✦ يتم ضغط الصور تلقائياً
+                      ✦ الصور تُحفظ بدقة كاملة عبر Vercel Blob
                     </span>
                     <input
                       type="file"

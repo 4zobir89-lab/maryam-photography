@@ -8,10 +8,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   reactStrictMode: false,
-  // Allow larger request bodies for image uploads (base64 images)
+  // Allow larger request bodies for image uploads (FormData with images up to 25MB)
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "30mb",
     },
   },
 };
