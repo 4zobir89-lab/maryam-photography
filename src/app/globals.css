@@ -3,131 +3,220 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   THEME TOKENS (Tailwind 4 + shadcn mapping)
+   Maps CSS custom properties to Tailwind utilities so
+   `bg-background`, `text-foreground`, `border-border`, etc.
+   resolve to our design tokens.
+   ============================================================ */
 @theme inline {
+  /* Surfaces & text */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Primary — champagne gold ramp */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-pale: var(--primary-pale);
+  --color-primary-rich: var(--primary-rich);
+  --color-primary-deep: var(--primary-deep);
+
+  /* Secondary / muted / accent */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Destructive */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Borders — NEUTRAL hairlines (not gold) */
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Charts — gold ramp */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Font families (loaded in layout.tsx via next/font) */
   --font-sans: var(--font-tajawal);
   --font-display: var(--font-playfair);
   --font-amiri: var(--font-amiri);
   --font-inter: var(--font-inter);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Radius scale — deliberately small (anti-pattern fix).
+     No 16px+ rounded except for pills (rounded-full). */
+  --radius: 0.375rem;    /* 6px — default */
+  --radius-sm: 0.125rem; /* 2px */
+  --radius-md: 0.25rem;  /* 4px */
+  --radius-lg: 0.375rem; /* 6px */
+  --radius-xl: 0.5rem;   /* 8px */
+  --radius-2xl: 0.75rem; /* 12px */
 }
 
-/* ===== Cinematic Dark Luxe Theme ===== */
+/* ============================================================
+   MOTION — single unified easing curve.
+   Use `var(--ease)` on every transition for consistency.
+   ============================================================ */
 :root {
-  --radius: 0.625rem;
-
-  /* Base — deep cinematic blacks */
-  --background: oklch(0.08 0.005 285);
-  --foreground: oklch(0.96 0.005 80);
-
-  --card: oklch(0.11 0.006 285);
-  --card-foreground: oklch(0.96 0.005 80);
-
-  --popover: oklch(0.11 0.006 285);
-  --popover-foreground: oklch(0.96 0.005 80);
-
-  /* Primary — champagne gold */
-  --primary: oklch(0.82 0.12 80);
-  --primary-foreground: oklch(0.1 0.01 285);
-
-  --secondary: oklch(0.16 0.006 285);
-  --secondary-foreground: oklch(0.93 0.005 80);
-
-  --muted: oklch(0.14 0.005 285);
-  --muted-foreground: oklch(0.62 0.01 80);
-
-  --accent: oklch(0.78 0.13 75);
-  --accent-foreground: oklch(0.1 0.01 285);
-
-  --destructive: oklch(0.62 0.22 25);
-
-  --border: oklch(0.22 0.008 285);
-  --input: oklch(0.18 0.006 285);
-  --ring: oklch(0.78 0.13 75);
-
-  --chart-1: oklch(0.82 0.12 80);
-  --chart-2: oklch(0.7 0.1 60);
-  --chart-3: oklch(0.55 0.08 40);
-  --chart-4: oklch(0.4 0.05 30);
-  --chart-5: oklch(0.92 0.06 90);
-
-  --sidebar: oklch(0.1 0.005 285);
-  --sidebar-foreground: oklch(0.96 0.005 80);
-  --sidebar-primary: oklch(0.82 0.12 80);
-  --sidebar-primary-foreground: oklch(0.1 0.01 285);
-  --sidebar-accent: oklch(0.16 0.006 285);
-  --sidebar-accent-foreground: oklch(0.96 0.005 80);
-  --sidebar-border: oklch(0.22 0.008 285);
-  --sidebar-ring: oklch(0.78 0.13 75);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* ============================================================
+   DARK MODE (default) — warm-black lacquer surfaces.
+   Slight warmth in hue 285 (very subtle blue-violet) keeps
+   the ground from feeling sterile; warmth lives in accents.
+   Borders are NEUTRAL (no chroma) — gold is reserved for
+   emphasis only, fixing the "everything gold borders"
+   anti-pattern.
+   ============================================================ */
+:root,
 .dark {
-  --background: oklch(0.08 0.005 285);
-  --foreground: oklch(0.96 0.005 80);
-  --card: oklch(0.11 0.006 285);
-  --card-foreground: oklch(0.96 0.005 80);
-  --popover: oklch(0.11 0.006 285);
-  --popover-foreground: oklch(0.96 0.005 80);
-  --primary: oklch(0.82 0.12 80);
-  --primary-foreground: oklch(0.1 0.01 285);
-  --secondary: oklch(0.16 0.006 285);
-  --secondary-foreground: oklch(0.93 0.005 80);
-  --muted: oklch(0.14 0.005 285);
-  --muted-foreground: oklch(0.62 0.01 80);
-  --accent: oklch(0.78 0.13 75);
-  --accent-foreground: oklch(0.1 0.01 285);
-  --destructive: oklch(0.62 0.22 25);
-  --border: oklch(0.22 0.008 285);
-  --input: oklch(0.18 0.006 285);
-  --ring: oklch(0.78 0.13 75);
-  --chart-1: oklch(0.82 0.12 80);
-  --chart-2: oklch(0.7 0.1 60);
-  --chart-3: oklch(0.55 0.08 40);
-  --chart-4: oklch(0.4 0.05 30);
-  --chart-5: oklch(0.92 0.06 90);
-  --sidebar: oklch(0.1 0.005 285);
-  --sidebar-foreground: oklch(0.96 0.005 80);
-  --sidebar-primary: oklch(0.82 0.12 80);
-  --sidebar-primary-foreground: oklch(0.1 0.01 285);
-  --sidebar-accent: oklch(0.16 0.006 285);
-  --sidebar-accent-foreground: oklch(0.96 0.005 80);
-  --sidebar-border: oklch(0.22 0.008 285);
-  --sidebar-ring: oklch(0.78 0.13 75);
+  --background: oklch(8% 0.005 285);
+  --foreground: oklch(94% 0.003 90);
+
+  --card: oklch(11% 0.005 285);
+  --card-foreground: oklch(94% 0.003 90);
+
+  --popover: oklch(13% 0.005 285);
+  --popover-foreground: oklch(94% 0.003 90);
+
+  /* Primary — champagne gold with pale/rich/deep variants */
+  --primary: oklch(82% 0.14 80);
+  --primary-foreground: oklch(10% 0.01 285);
+  --primary-pale: oklch(86% 0.07 84);    /* hover lift */
+  --primary-rich: oklch(77% 0.13 82);    /* active state */
+  --primary-deep: oklch(61% 0.085 78);   /* borders on gold */
+
+  /* Secondary — warm muted */
+  --secondary: oklch(16% 0.006 285);
+  --secondary-foreground: oklch(92% 0.003 90);
+
+  /* Muted */
+  --muted: oklch(14% 0.005 285);
+  --muted-foreground: oklch(68% 0.005 90);
+
+  /* Accent — mirrors primary */
+  --accent: oklch(82% 0.14 80);
+  --accent-foreground: oklch(10% 0.01 285);
+
+  /* Destructive — deep coral */
+  --destructive: oklch(58% 0.18 25);
+  --destructive-foreground: oklch(98% 0.003 90);
+
+  /* Borders — NEUTRAL hairlines (anti-pattern fix) */
+  --border: oklch(78% 0 0 / 0.14);
+  --border-strong: oklch(78% 0.09 82 / 0.4); /* gold for emphasis only */
+  --input: oklch(20% 0.006 285);
+  --ring: oklch(82% 0.14 80);
+
+  /* Charts — gold ramp */
+  --chart-1: oklch(82% 0.14 80);
+  --chart-2: oklch(74% 0.11 78);
+  --chart-3: oklch(64% 0.09 76);
+  --chart-4: oklch(52% 0.07 74);
+  --chart-5: oklch(90% 0.07 86);
+
+  /* Sidebar */
+  --sidebar: oklch(10% 0.005 285);
+  --sidebar-foreground: oklch(94% 0.003 90);
+  --sidebar-primary: oklch(82% 0.14 80);
+  --sidebar-primary-foreground: oklch(10% 0.01 285);
+  --sidebar-accent: oklch(16% 0.006 285);
+  --sidebar-accent-foreground: oklch(94% 0.003 90);
+  --sidebar-border: oklch(78% 0 0 / 0.12);
+  --sidebar-ring: oklch(82% 0.14 80);
+
+  /* Selection (gold-tinted) */
+  --selection-bg: oklch(82% 0.14 80 / 0.28);
+  --selection-fg: oklch(98% 0.003 90);
 }
 
+/* ============================================================
+   LIGHT MODE — warm paper, NOT pure white.
+   Pure #fff/#000 is an anti-pattern; tint the ground warm
+   and ink cool for legibility without harshness.
+   Source order: `.light` comes after `:root, .dark` so it
+   overrides the dark defaults when applied to <html>.
+   ============================================================ */
+.light {
+  --background: oklch(97% 0.008 85);
+  --foreground: oklch(20% 0.01 285);
+
+  --card: oklch(99% 0.005 85);
+  --card-foreground: oklch(20% 0.01 285);
+
+  --popover: oklch(99% 0.005 85);
+  --popover-foreground: oklch(20% 0.01 285);
+
+  /* Deeper gold for contrast on light */
+  --primary: oklch(55% 0.12 75);
+  --primary-foreground: oklch(98% 0.003 85);
+  --primary-pale: oklch(62% 0.1 76);
+  --primary-rich: oklch(48% 0.13 74);
+  --primary-deep: oklch(40% 0.1 73);
+
+  --secondary: oklch(94% 0.008 85);
+  --secondary-foreground: oklch(20% 0.01 285);
+
+  --muted: oklch(95% 0.006 85);
+  --muted-foreground: oklch(45% 0.01 285);
+
+  --accent: oklch(55% 0.12 75);
+  --accent-foreground: oklch(98% 0.003 85);
+
+  --destructive: oklch(52% 0.2 25);
+  --destructive-foreground: oklch(98% 0.003 85);
+
+  --border: oklch(20% 0.01 285 / 0.12);
+  --border-strong: oklch(55% 0.12 75 / 0.45);
+  --input: oklch(92% 0.008 85);
+  --ring: oklch(55% 0.12 75);
+
+  --chart-1: oklch(55% 0.12 75);
+  --chart-2: oklch(48% 0.11 73);
+  --chart-3: oklch(40% 0.09 71);
+  --chart-4: oklch(32% 0.07 69);
+  --chart-5: oklch(72% 0.08 80);
+
+  --sidebar: oklch(96% 0.008 85);
+  --sidebar-foreground: oklch(20% 0.01 285);
+  --sidebar-primary: oklch(55% 0.12 75);
+  --sidebar-primary-foreground: oklch(98% 0.003 85);
+  --sidebar-accent: oklch(94% 0.008 85);
+  --sidebar-accent-foreground: oklch(20% 0.01 285);
+  --sidebar-border: oklch(20% 0.01 285 / 0.1);
+  --sidebar-ring: oklch(55% 0.12 75);
+
+  --selection-bg: oklch(55% 0.12 75 / 0.22);
+  --selection-fg: oklch(20% 0.01 285);
+}
+
+/* ============================================================
+   BASE LAYER
+   ============================================================ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -138,50 +227,126 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-tajawal), var(--font-inter), sans-serif;
+    /* Keeps accidental horizontal overflow from breaking layout.
+       Remove if it interferes with sticky positioning. */
     overflow-x: hidden;
   }
 }
 
-/* ===== Custom scrollbar ===== */
+/* ============================================================
+   SCROLLBAR — refined, thin (8px), subtle gold gradient.
+   ============================================================ */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: oklch(0.08 0.005 285);
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, oklch(0.78 0.13 75), oklch(0.55 0.08 40));
-  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--primary-pale),
+    var(--primary-deep)
+  );
+  border-radius: 8px;
+  border: 2px solid var(--background);
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, oklch(0.85 0.14 75), oklch(0.65 0.1 40));
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    var(--primary-rich)
+  );
+  background-clip: padding-box;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-deep) var(--background);
 }
 
-/* ===== Selection ===== */
+/* ============================================================
+   SELECTION — gold-tinted
+   ============================================================ */
 ::selection {
-  background: oklch(0.78 0.13 75 / 0.3);
-  color: oklch(0.98 0.005 80);
+  background: var(--selection-bg);
+  color: var(--selection-fg);
 }
 
-/* ===== Display fonts ===== */
+/* ============================================================
+   DISPLAY FONTS — kept as utility aliases.
+   Body defaults to Tajawal (Arabic) / Inter (Latin).
+   Use these to switch a specific element to a different face.
+   ============================================================ */
 .font-display {
-  font-family: var(--font-playfair), serif;
+  font-family: var(--font-playfair), serif; /* Latin decorative */
 }
 .font-amiri {
-  font-family: var(--font-amiri), serif;
+  font-family: var(--font-amiri), serif;    /* Arabic display */
 }
 .font-inter {
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-inter), sans-serif; /* Latin labels */
 }
 
-/* ===== Gold gradient text ===== */
+/* ============================================================
+   TYPOGRAPHY UTILITIES — opinionated helpers for the
+   type scale. Combines family + weight + tracking so
+   headings have deliberate contrast (thin hero / heavy
+   section titles), not flat hierarchy.
+   ============================================================ */
+
+/* Small uppercase Inter label — for section eyebrows */
+.eyebrow {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+/* Large display heading — Amiri, heavy, tight leading.
+   For hero / showcase titles (Arabic display). */
+.display-heading {
+  font-family: var(--font-amiri), serif;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* Section title — Amiri, semi-bold, fluid clamp.
+   For section headers throughout the page. */
+.section-title {
+  font-family: var(--font-amiri), serif;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  line-height: 1.1;
+}
+
+/* Large body / lead paragraph — soft, readable */
+.body-lg {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--muted-foreground);
+}
+
+/* Apply the unified motion easing to any element */
+.motion-ease {
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ============================================================
+   GOLD GRADIENT TEXT — refined, subtle (not garish).
+   Uses primary ramp tokens so it adapts to dark/light.
+   Use sparingly — only for decorative emphasis, never
+   body copy (kills readability).
+   ============================================================ */
 .text-gold-gradient {
   background: linear-gradient(
     135deg,
-    oklch(0.92 0.08 90) 0%,
-    oklch(0.82 0.13 75) 40%,
-    oklch(0.72 0.1 65) 70%,
-    oklch(0.85 0.12 80) 100%
+    var(--primary-pale) 0%,
+    var(--primary) 50%,
+    var(--primary-rich) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -189,7 +354,10 @@
   color: transparent;
 }
 
-/* ===== Shimmer effect ===== */
+/* ============================================================
+   SHIMMER TEXT — subtle moving sheen across letters.
+   Slowed to 6s and desaturated for restraint.
+   ============================================================ */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -201,77 +369,65 @@
 .shimmer-text {
   background: linear-gradient(
     90deg,
-    oklch(0.62 0.01 80) 0%,
-    oklch(0.92 0.1 80) 50%,
-    oklch(0.62 0.01 80) 100%
+    var(--muted-foreground) 0%,
+    var(--primary) 50%,
+    var(--muted-foreground) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 4s linear infinite;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
 }
 
-/* ===== Cinematic vignette ===== */
-.cinematic-vignette::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
+/* ============================================================
+   SURFACE CARD — solid raised panel (anti-pattern fix:
+   replaces frosted-glass `glass-card`).
+   `.glass-card` kept as a backwards-compat alias so
+   existing components continue to render.
+   ============================================================ */
+.surface-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* ============================================================
+   HAIRLINE — neutral divider (not gold).
+   Subtle gradient fade from transparent → border → transparent.
+   ============================================================ */
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
     transparent 0%,
-    transparent 50%,
-    oklch(0.05 0 0 / 0.7) 100%
+    var(--border) 50%,
+    transparent 100%
   );
-  pointer-events: none;
-  z-index: 1;
 }
 
-/* ===== Letterbox bars (cinematic) ===== */
-.letterbox::before,
-.letterbox::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: oklch(0.05 0 0);
-  z-index: 30;
-  pointer-events: none;
-}
-.letterbox::before {
-  top: 0;
-}
-.letterbox::after {
-  bottom: 0;
-}
-
-/* ===== Film grain overlay ===== */
-.film-grain {
-  position: relative;
-}
-.film-grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
-  opacity: 0.06;
-  pointer-events: none;
-  z-index: 2;
-  mix-blend-mode: overlay;
-}
-
-/* ===== Hover lift card ===== */
+/* ============================================================
+   LIFT CARD — hover elevation with unified easing.
+   Neutral shadow (not gold glow — that was an anti-pattern).
+   ============================================================ */
 .lift-card {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.5s var(--ease),
+    box-shadow 0.5s var(--ease);
 }
 .lift-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 30px 60px -20px oklch(0.78 0.13 75 / 0.25);
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px -20px oklch(0% 0 0 / 0.5);
 }
 
-/* ===== Marquee ===== */
+/* ============================================================
+   MARQUEE — continuous horizontal scroll.
+   ============================================================ */
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -287,94 +443,40 @@
   animation: marquee 30s linear infinite reverse;
 }
 
-/* ===== Slow zoom (Ken Burns) ===== */
+/* ============================================================
+   KEN BURNS — slow zoom/pan for hero images.
+   ============================================================ */
 @keyframes ken-burns {
   0% {
     transform: scale(1) translate(0, 0);
   }
   100% {
-    transform: scale(1.15) translate(-2%, -2%);
+    transform: scale(1.12) translate(-1.5%, -1.5%);
   }
 }
 .ken-burns {
-  animation: ken-burns 20s ease-out infinite alternate;
+  animation: ken-burns 20s var(--ease) infinite alternate;
 }
 
-/* ===== Pulse glow ===== */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px oklch(0.78 0.13 75 / 0.3),
-      0 0 40px oklch(0.78 0.13 75 / 0.1);
-  }
-  50% {
-    box-shadow: 0 0 30px oklch(0.78 0.13 75 / 0.5),
-      0 0 60px oklch(0.78 0.13 75 / 0.2);
-  }
-}
-.pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-/* ===== Scroll reveal ===== */
+/* ============================================================
+   REVEAL UP — scroll-triggered entrance.
+   Pairs with an IntersectionObserver that toggles `.is-visible`.
+   ============================================================ */
 .reveal-up {
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.9s var(--ease),
+    transform 0.9s var(--ease);
 }
 .reveal-up.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ===== Vertical text ===== */
+/* ============================================================
+   VERTICAL TEXT — for decorative side labels.
+   ============================================================ */
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-}
-
-/* ===== Custom cursor follower ===== */
-.cursor-glow {
-  position: fixed;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    oklch(0.78 0.13 75 / 0.08) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: 1;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.3s ease;
-  mix-blend-mode: screen;
-}
-
-/* ===== Hide scrollbar for horizontal scrollers ===== */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* ===== Glass card ===== */
-.glass-card {
-  background: oklch(0.15 0.006 285 / 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid oklch(0.78 0.13 75 / 0.15);
-}
-
-/* ===== Hairline divider ===== */
-.hairline {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    oklch(0.78 0.13 75 / 0.4) 50%,
-    transparent 100%
-  );
 }

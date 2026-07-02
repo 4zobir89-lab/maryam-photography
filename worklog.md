@@ -516,3 +516,138 @@ Stage Summary:
 - Language toggle (Arabic RTL ↔ English LTR) live in navbar (desktop + mobile). `<html lang/dir>` + localStorage persisted on toggle. Major UI labels (nav, CTAs, hero title, footer columns, contact title/button) translated via `t()` — lightweight i18n, not full routing.
 - Build posture hardened: TypeScript errors no longer ignored at build time, Vercel Blob whitelisted for next/image, x-powered-by header disabled. ESLint must now run via `npm run lint` (Next.js 16 dropped built-in ESLint).
 - Next actions: (1) `prisma db push` will be run automatically by the existing build script — the new `NewsletterSubscriber` table will be created on next deploy. (2) Optionally add an admin page to view newsletter subscribers (API already exists at `GET /api/newsletter`). (3) Consider deeper translation coverage (About, Services, Portfolio section titles) in a future task if English UX feedback warrants it.
+
+---
+Task ID: rebuild-hero-nav-footer
+Agent: general-purpose
+Task: Rebuild Hero, Navbar, Footer with editorial design
+
+Work Log:
+- Read `src/app/globals.css` to inventory tokens (warm-black `--background`, champagne gold `--primary` ramp, neutral `--border`, `--ease: cubic-bezier(0.2, 0.8, 0.2, 1)`, utility classes `.eyebrow`, `.body-lg`, `.vertical-text`, `.hairline`, `.surface-card`, `.font-amiri/display/inter`) and confirmed the design-system anti-pattern guidance (no glow orbs, no excessive glassmorphism, no gradient-text everywhere, no pure black/white, no cramped padding, no flat hierarchy, no everything-centered, no monotonous spacing).
+- Read `src/components/shared/LanguageProvider.tsx` (`useLang()` → `{ lang, setLang, toggle, t }`) and `LanguageToggle.tsx` (already gold-bordered pill; kept as-is).
+- Read existing `Navbar.tsx` / `Hero.tsx` / `Footer.tsx` to preserve all behavior contracts (settings fetch shape, scroll-spy logic, `/blog` and `/booking` routes, newsletter POST endpoint, developer signature link to Wasim).
+- Rebuilt **`src/components/sections/Navbar.tsx`**:
+  - Extracted a module-level `LogoMark` (pure presentational) so the inline `Logo` component was no longer created during render (ESLint `react-hooks/static-components`).
+  - Sticky header: transparent + py-5 at top; `bg-background/80 backdrop-blur-sm border-b border-border py-3` past 40px scroll. Single transition targeting only `background-color, border-color, padding` with `motion-ease`.
+  - Logo: w-9 h-9 SVG circle with "M" in `font-display`, paired with stacked "مريم" (font-amiri) + "MARYAM" (font-inter, 9px, tracking 0.35em, muted). Foreground color — no gold gradient.
+  - Nav items trimmed to: home, about, portfolio, services, testimonials, blog (route), contact. Each link uses `font-amiri text-sm`; active link = `text-foreground` + animated 2px gold underline (`transition-[width]` with `motion-ease`, w-0→w-full on hover/active). Logical `start-0` for RTL correctness.
+  - CTA "احجز جلسة" → solid `bg-primary text-primary-foreground`, `rounded-md` (NOT pill), `px-5 py-2 text-sm font-medium`, hover `bg-primary-pale`.
+  - Mobile: full-screen overlay (`fixed inset-0 bg-background`), stagger animation 0.06s per item, close button on visual left (RTL end) with brand on visual right (RTL start), body scroll locked while open.
+  - `LanguageToggle` kept inline next to CTA on desktop; rendered below CTA in mobile overlay.
+- Rebuilt **`src/components/sections/Hero.tsx`**:
+  - Asymmetric grid `lg:grid-cols-[3fr_2fr]`: text 60% on visual LEFT, portrait 40% on visual RIGHT (achieved via `dir="ltr"` on section + `dir="rtl"` on text column so Arabic still renders correctly).
+  - Background: solid `bg-background`. All glow orbs, radial gradients, film-grain, and gold-blur removed.
+  - Left column (top→bottom, staggered 0.1s each with `var(--ease)`):
+    1. Eyebrow with short 8px gold hairline before it (`.eyebrow` class, uses `s.taglineEn`)
+    2. Massive Arabic name `clamp(5rem, 12vw, 11rem)`, `font-amiri font-bold`, `leading-[0.9]`, `text-foreground` (NOT gold gradient) — single accent is a small `w-2.5 h-2.5` gold dot beside the name
+    3. English subtitle `M·A·R·Y·A·M` in `font-display`, wide tracking (0.45em), muted
+    4. Description in `.body-lg` style + `max-w-xl` (uses `s.heroDescAr`)
+    5. CTA row: solid gold "استكشف الأعمال" (rounded-md, hover `bg-primary-pale`, ArrowDown that nudges on hover) + outline neutral "قصة مريم" (border-border, hover border-strong + text-primary)
+    6. Stats: 3 inline, NOT in cards, separated by `w-px h-10 bg-primary/25` gold dividers. Number in `font-display text-2xl text-primary`, label `text-xs text-muted-foreground`.
+  - Right column: `aspect-[3/4]` container with `border border-border-strong/40`. If `s.heroImageData` exists → plain `<img loading="lazy" object-cover>`. Else → refined inline `ApertureDiagram` SVG (concentric rings, 36 tick marks with major/minor distinction, 6-blade aperture polygon, center crosshair, "ƒ/1.4 · 50 mm" + "MARYAM · LENS" labels) in gold hairlines. Floating `.vertical-text` "EST · 2018" label on the side. Entrance: fade + x-offset 30→0.
+  - Scroll indicator at bottom-center: thin `w-px h-12` line + 1px gold dot animating y:[0,44] opacity:[0,1,0] infinite, paired with `.eyebrow text-[0.6rem]` "Scroll" label.
+  - Star-rating widget removed (was an anti-pattern decorative element competing with the eyebrow).
+- Rebuilt **`src/components/sections/Footer.tsx`**:
+  - Top 4-column grid (`grid-cols-2 md:grid-cols-4`): Brand + Services + Explore + Connect. Brand col hosts logo + name + `footerDesc` + minimal social icons (just `w-9 h-9` icons with `hover:bg-muted hover:text-primary`, NO bubble circles). The other three columns are list-style with `font-inter text-[10px] tracking-[0.35em] text-primary uppercase` headers and `text-sm text-muted-foreground hover:text-primary` links.
+  - Newsletter moved into its own slim row (between the top grid and bottom bar): minimal inline email input + arrow button sharing a single underline (`border-b border-border focus-within:border-border-strong`). NO card container. Arrow icon rotates 180° in RTL. Submitting hits existing `/api/newsletter` endpoint; success/error states render as small caption beneath.
+  - Decorative background wordmark: absolutely-positioned "مريم" in `font-amiri font-bold`, `font-size: clamp(4rem, 15vw, 12rem)`, `text-foreground/[0.04]` (very subtle texture), translated down 20% so it bleeds off the bottom — clearly background, not feature.
+  - Bottom bar: `border-t border-border py-6 flex justify-between`. In RTL the first child (copyright text) sits visual right; the second (Crafted in Sana'a + back-to-top button) sits visual left. Back-to-top is `w-8 h-8 border border-border hover:border-border-strong` with ArrowUp icon, `rounded-sm`.
+  - Developer signature preserved exactly as before — `وسيم الزبيري` in `font-amiri text-sm text-primary` with Code2 + Heart + MessageCircle icons, centered, links to Wasim's WhatsApp. Heart uses `fill-destructive/70 text-destructive/70` (the destructive ramp has a coral hue that reads as "red" without being pure red).
+  - NO glassmorphism, NO glow gradient on the top hairline, NO cards-inside-cards. All borders are neutral `border-border` (gold reserved for the primary accent only).
+- Ran `npx tsc --noEmit` → exit 0. Ran ESLint on the three files → exit 0 (resolved the `react-hooks/static-components` error by extracting `LogoMark` to module scope).
+
+Stage Summary:
+- 3 components rebuilt to editorial standard: `src/components/sections/Navbar.tsx`, `src/components/sections/Hero.tsx`, `src/components/sections/Footer.tsx`.
+- Anti-patterns eliminated across all three: removed dark-glow orbs, gold-gradient logo/wordmark, centered hero, pill-rounded CTAs, bubble-circle social icons, cards-inside-cards, and decorative star-rating clutter.
+- Design system tokens wired correctly: `.eyebrow`, `.body-lg`, `.vertical-text`, `--primary` ramp, `--border` (neutral), `--border-strong` (gold), `.motion-ease`, `font-amiri/display/inter`. All motion uses `[0.2, 0.8, 0.2, 1]` easing array (matches `var(--ease)`).
+- RTL correctness: hero uses `dir="ltr"` on grid wrapper + `dir="rtl"` on text column to honor the literal "text left / image right" instruction; navbar mobile overlay places brand on RTL start (visual right) and close button on RTL end (visual left); footer copyright auto-places on RTL start (visual right) via `justify-between`.
+- Settings fetch preserved (`/api/settings`); all field names match the Prisma schema (`heroImageData`, `taglineEn`, `heroStat*Num/Label`, `footerDesc`, `footerCopyright`, `contact*`).
+- Type-check + ESLint clean. No other files touched.
+
+---
+Task ID: rebuild-about-marquee-services
+Agent: general-purpose
+Task: Rebuild About, Marquee, Services with editorial design
+
+Work Log:
+- Read `globals.css`, `Hero.tsx`, `LanguageProvider.tsx`, existing `About.tsx`, `Marquee.tsx`, `Services.tsx`, and `Navbar.tsx` (LogoMark pattern reference) to internalize the editorial design language: warm-black lacquer surfaces, neutral hairlines (gold reserved for emphasis), `.section-title` / `.eyebrow` / `.body-lg` / `.display-heading` / `.surface-card` / `.motion-ease` utilities, single easing `[0.2, 0.8, 0.2, 1]` matching `var(--ease)`.
+- Verified `/api/settings` whitelist (`marqueeWords`, `aboutImageData`, `aboutSignature`, `aboutHeadingAr`, etc.) and `/api/philosophy` + `/api/services` return shapes before touching the components.
+- Rebuilt **`src/components/sections/About.tsx`**:
+  - Editorial split header (left-aligned, NOT centered): short gold hairline + `.eyebrow` ("About The Artist") + `section-title` "قصة خلف العدسة" + 24px `.hairline` rule below.
+  - Bio grid: `lg:grid-cols-12` with portrait `col-span-5` and text `col-span-7`. Portrait `aspect-[3/4]` with a single 1px gold hairline frame (`border border-primary/30`, NOT the previous thick double-frame). Image: plain `<img loading="lazy" object-cover>` with hover zoom `scale-[1.04]` over 700ms using `var(--ease)`. Fallback: replaced the filled silhouette with a refined `MonogramPortrait` SVG — warm radial wash, inset hairline frame, large Amiri "م" monogram, "MARYAM" tracking label, "EST · 2018 · SANA'A" caption, and four corner ticks (typographic mark, NOT a silhouette). Floating "7+ Years" badge: 80×80 neutral square (`bg-background border border-border-strong/40`), NO `pulse-glow`, NO `rounded-full`.
+  - Text column: `.eyebrow` "THE STORY" + short hairline, then h3 in `.display-heading` (font-amiri, line-height 1.05), then two paragraphs in `.body-lg`. Tags as inline `.rounded-full` pills (NOT cards) with `border-border` → `hover:border-border-strong hover:text-primary`. Signature row: `font-amiri text-primary` signature + flex-1 gradient hairline + "Maryam Al-Hadhrami" label + "Visual Storyteller" sub-label.
+  - Philosophy grid: `sm:grid-cols-2 lg:grid-cols-4 gap-5`. Each card uses `.surface-card` (1px neutral hairline, NO thick border, NO nested cards, NO corner accents). Contents: line-style icon with `strokeWidth={1.5}`, `.eyebrow` English title, `font-amiri text-2xl` Arabic title, `text-sm` description. Hover: `-translate-y-1` (4px) with `duration-500 motion-ease` — no shadow, no glow.
+  - Removed all `pulse-glow`, `film-grain`, `text-gold-gradient`, `backdrop-blur`, decorative background orbs. Wired `useLang().t` for Arabic/English label toggles.
+- Rebuilt **`src/components/sections/Marquee.tsx`**:
+  - `bg-secondary` (warm muted) with `border-y border-border` (top + bottom hairlines) — replaced the loud `bg-primary` yellow band.
+  - Height: `py-8` (was `py-10`).
+  - Words rendered by detecting Arabic via `/[\u0600-\u06FF]/`: Arabic words → `font-amiri text-3xl md:text-4xl text-secondary-foreground`; English words → `font-display italic text-xl md:text-2xl text-muted-foreground`. Alternation falls naturally out of the comma-separated list order.
+  - Separator between every word: 12px (`w-3 h-3`) gold star/diamond SVG (`text-primary`, opacity 0.85) — was previously 24px.
+  - Speed: `animationDuration: '40s'` (was 30s) on `.animate-marquee`. Pause on hover via `group-hover:[animation-play-state:paused]`.
+  - Edge fades: two `w-24` gradient masks from `from-secondary to-transparent` on each side for a refined transition (no hard cutoff).
+  - `aria-hidden` + `dir="ltr"` so the LTR marquee track scrolls correctly regardless of the page RTL state.
+- Rebuilt **`src/components/sections/Services.tsx`**:
+  - Editorial split header: short hairline + `.eyebrow` ("Services & Packages") + `section-title` "خدمات التصوير" + `.body-lg` subtitle + 24px `.hairline`. All left-aligned, max-w-3xl.
+  - Grid: `sm:grid-cols-2 lg:grid-cols-4 gap-5`. Each card uses `.surface-card` (solid `bg-card`, 1px neutral border). Removed the `bg-gradient-to-b from-primary/5` featured tint and the absolute accent-gradient overlay (both anti-patterns).
+  - Featured badge: small `rounded-full px-2.5 py-1 bg-primary text-primary-foreground text-[10px]` pill at top-left (RTL → visual right) — gold bg, NOT a giant featured frame.
+  - Icon: small square `w-10 h-10 border border-border` (NOT a circle, NOT a gradient bubble) with line-style icon `strokeWidth={1.5}`.
+  - `.eyebrow` English title → `font-amiri text-xl` Arabic title → `font-display text-lg text-primary` price (solid gold, NOT `.text-gold-gradient`) → `text-xs text-muted-foreground` duration → `.hairline` divider → feature list with `Check` icon `w-3.5 h-3.5 strokeWidth={1.5} text-primary` and `text-sm` body → full-width button.
+  - Button: `rounded-md` (NOT `rounded-full`). Featured = solid `bg-primary text-primary-foreground hover:bg-primary-pale`. Non-featured = `border border-border` outline that lifts to `hover:border-border-strong hover:text-primary`. All scroll to `#contact`.
+  - Hover on the card: `-translate-y-1` (4px) + `hover:border-border-strong` with `duration-500 motion-ease`. No shadow, no gradient lift.
+  - Bottom note: small italic `text-sm text-muted-foreground` paragraph, left-aligned (NOT centered), about package customization. Wired `useLang().t` throughout.
+- Ran `npx tsc --noEmit` → exit 0 (no type errors). No other files touched.
+
+Stage Summary:
+- 3 components rebuilt to editorial standard: `src/components/sections/About.tsx`, `src/components/sections/Marquee.tsx`, `src/components/sections/Services.tsx`.
+- Anti-patterns eliminated: removed `pulse-glow` badge animation, `text-gold-gradient` everywhere, backdrop-blur nested cards, decorative glow orbs, gradient-accent service cards, `rounded-full` CTA buttons, centered headers (now left-aligned editorial splits), filled silhouette portrait fallback (replaced with typographic Amiri monogram).
+- Design system tokens wired correctly: `.section-title`, `.eyebrow`, `.body-lg`, `.display-heading`, `.surface-card`, `.hairline`, `.motion-ease`, `border-border` (neutral) vs `border-border-strong` (gold emphasis), `bg-secondary` for marquee ground. All motion uses the `[0.2, 0.8, 0.2, 1]` easing array to match `var(--ease)`.
+- API fetch patterns preserved: About hits `/api/settings` + `/api/philosophy`; Marquee hits `/api/settings.marqueeWords`; Services hits `/api/services`. All field names match the existing Prisma schema (`aboutImageData`, `aboutSignature`, `aboutHeadingAr`, `aboutTags`, `marqueeWords`, service `features` JSON string, `featured` flag).
+- `useLang().t` consumed in About + Services (Marquee is purely decorative, no copy). RTL preserved (`dir="rtl"` on About + Services sections; `dir="ltr"` on Marquee track so the loop scrolls correctly).
+- Type-check clean. No other files modified.
+
+---
+Task ID: rebuild-portfolio-testimonials
+Agent: general-purpose
+Task: Rebuild Portfolio, Testimonials with editorial design
+
+Work Log:
+- Read globals.css, Hero.tsx, About.tsx, Services.tsx, Marquee.tsx to internalize the editorial design language (warm-black lacquer + champagne gold + neutral hairlines, eyebrow + section-title + body-lg pattern, var(--ease), rounded-md not rounded-full, no glass-cards/glow orbs).
+- Read LanguageProvider.tsx (useLang: lang, t(ar, en)) and MotifSvg.tsx (kept for placeholder fallback).
+- Read existing Portfolio.tsx and Testimonials.tsx to preserve API fetch patterns (/api/projects, /api/projects/[id]/images, /api/testimonials).
+
+Portfolio.tsx — full rewrite:
+  - Replaced dark custom oklch(0.06) background with bg-background for consistency with Hero/About/Services.
+  - Header: editorial split (left-aligned, dir="rtl") — short gold hairline + eyebrow "أعمال مختارة/Selected Works" + section-title "معرض الأعمال" + body-lg subtitle + 24-px hairline divider.
+  - Filters: rounded-md pill buttons (NOT rounded-full). Active = solid bg-primary/border-primary. Inactive = neutral border + muted text + hover:border-border-strong. Each filter shows a small count badge (font-inter 10px, rounded-sm) computed live from projects.
+  - Masonry grid kept (columns-1 sm:columns-2 lg:columns-3 gap-4 md:gap-6). Each card uses motion.button with break-inside-avoid.
+  - Cards: natural-aspect image (loading lazy + decoding async; first card eager for LCP). Subtle bottom-only gradient (from-background/85 → transparent) NOT a full overlay. Removed the maximize-icon circle in center (anti-pattern icon-tile-stack); whole card is clickable.
+  - Caption: row 1 = year (gold eyebrow) + category label (muted font-inter). Row 2 = title (font-amiri) + location (font-display small). Caption slides up -1 on hover. Image scales 1.03 (NOT 1.1).
+  - Top-right index number: idx+1 padded to "01" in font-inter tiny gold (was using project.id — now uses visual order).
+  - Lightbox redesigned: top bar with hairline + eyebrow category + image counter "01 / 02" + close button (rounded-md, hairline border). Main image centered max-h-[70vh] (lowered from 75vh to make room for the info panel). Prev/next buttons: rounded-md, hairline border, no backdrop blur (removed glass). RTL-aware chevron direction preserved.
+  - Bottom info panel: bg-card surface (NOT glass-card). 2-col grid: left = year eyebrow + category + title (font-amiri 3xl) + English subtitle + 16px hairline + description; right = meta (location, year in font-inter labels + amiri values) + thumbnail strip (rounded-sm, border-primary on active).
+  - Empty state: minimal text-only message, no icon-tile.
+  - Bottom CTA: outline button (rounded-md, border-border, hover:border-border-strong + text-primary) linking to /gallery via next/link. Includes ArrowUpRight icon that nudges on hover.
+  - Keyboard nav preserved (Esc/ArrowLeft/ArrowRight) with RTL semantics.
+  - All transitions use motion-ease + var(--ease) and EASE constant.
+
+Testimonials.tsx — full rewrite:
+  - Replaced dark custom background + decorative glow orb + glass-card with bg-background + surface-card (anti-patterns removed: glow orbs, glassmorphism, gradient-text everywhere).
+  - Header: editorial split (left-aligned, dir="rtl") — gold hairline + eyebrow "أصوات العملاء/Client Voices" + section-title "آراء العملاء" + body-lg + 24-px hairline.
+  - Testimonial display: surface-card container. 2-col grid (md:grid-cols-5) when image present — image col-span-2 (40%), content col-span-3 (60%). Single col centered when no image.
+  - Image side: full-height object-cover img, lazy + async. Clickable to open lightbox. Verified "موثّقة" badge top-right — small rounded-md pill with emerald tint (bg-emerald-500/15 + border-emerald-400/40 + emerald-300 text) — kept the green "verified" convention but rendered editorially (no rounded-full, no shadow). Decorative corner accents: thin gold (border-primary/60) L-shapes at opposite corners. Subtle hover hint pill ("عرض كامل").
+  - Content side: big Quote icon (text-primary/15, strokeWidth 1). Rating stars left-aligned (RTL-natural). Quote text font-amiri text-xl/2xl right-aligned with « » guillemets. 20-px hairline divider. Author row: small avatar circle (rounded-full, border-primary/30, bg-secondary) with font-amiri initials + name (font-amiri) + role (muted) + roleEn (font-inter eyebrow gold).
+  - Navigation: prev/next rounded-md hairline buttons (border-border, hover:border-border-strong + text-primary). Dots indicator: rounded-sm (NOT rounded-full), active = w-8 bg-primary, inactive = w-2 bg-border. Counter "01 / 04" in font-inter tracking-[0.3em].
+  - Stats bar: 4 stats in a row separated by thin vertical 1px hairlines (w-px h-12 bg-border), NOT card containers. Each stat: font-display text-2xl/3xl gold (NOT gradient) + 10-12px muted label.
+  - Lightbox kept: minimal redesign — emerald badge moved to top-left, X button to top-right (rounded-md hairline), border-border on image instead of border-primary/20 glow.
+  - All transitions use motion-ease + var(--ease) and EASE constant.
+  - useLang() used throughout for bilingual labels.
+
+Verification:
+- npx tsc --noEmit passes cleanly (no errors).
+
+Stage Summary:
+- Portfolio.tsx and Testimonials.tsx fully rebuilt to match the editorial design standard set by Hero/About/Services/Marquee: warm-black bg-background surfaces, neutral hairlines, gold reserved for emphasis only, rounded-md (not rounded-full) for pills/buttons, surface-card for containers, var(--ease) on all transitions, no glow/glass/gradient-text anti-patterns.
+- Both sections now use the editorial split header pattern (eyebrow + section-title + body-lg + 24-px hairline).
+- Portfolio: masonry layout preserved, filter pills with count badges, redesigned lightbox with surface-card info panel, CTA links to /gallery.
+- Testimonials: 2-col image+content layout with verified badge + corner accents, vertical-hairline-separated stats bar, dots/counter navigation preserved.
+- Existing API fetch patterns and MotifSvg fallback preserved. No other files touched.

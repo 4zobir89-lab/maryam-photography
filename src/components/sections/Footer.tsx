@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Mail,
   ArrowUp,
+  ArrowRight,
   Heart,
   Code2,
   Loader2,
@@ -42,31 +43,32 @@ const staticColumns: FooterColumn[] = [
     titleAr: "الخدمات",
     titleEn: "Services",
     links: [
-      { labelAr: "تصوير الأعراس", labelEn: "Weddings", href: "#services" },
-      { labelAr: "بورتريه", labelEn: "Portraits", href: "#services" },
-      { labelAr: "تصوير تجاري", labelEn: "Commercial", href: "#services" },
-      { labelAr: "ورش العمل", labelEn: "Workshops", href: "#services" },
+      { labelAr: "تصوير الأعراس", labelEn: "Weddings", href: "/#services" },
+      { labelAr: "بورتريه", labelEn: "Portraits", href: "/#services" },
+      { labelAr: "تصوير تجاري", labelEn: "Commercial", href: "/#services" },
+      { labelAr: "ورش العمل", labelEn: "Workshops", href: "/#services" },
     ],
   },
   {
     titleAr: "الاستكشاف",
     titleEn: "Explore",
     links: [
-      { labelAr: "الرئيسية", labelEn: "Home", href: "#home" },
-      { labelAr: "عن مريم", labelEn: "About", href: "#about" },
-      { labelAr: "الأعمال", labelEn: "Portfolio", href: "#portfolio" },
-      { labelAr: "آراء العملاء", labelEn: "Testimonials", href: "#testimonials" },
+      { labelAr: "الرئيسية", labelEn: "Home", href: "/#home" },
+      { labelAr: "عن مريم", labelEn: "About", href: "/#about" },
+      { labelAr: "الأعمال", labelEn: "Portfolio", href: "/#portfolio" },
       { labelAr: "المدونة", labelEn: "Blog", href: "/blog" },
-      { labelAr: "المعرض الكامل", labelEn: "Full Gallery", href: "/gallery" },
+      { labelAr: "المعرض الكامل", labelEn: "Gallery", href: "/gallery" },
+      { labelAr: "احجز جلسة", labelEn: "Booking", href: "/booking" },
     ],
   },
 ];
+
+const EASE = [0.2, 0.8, 0.2, 1] as const;
 
 export function Footer() {
   const [s, setS] = useState<Settings | null>(null);
   const { t } = useLang();
 
-  // Newsletter form state
   const [email, setEmail] = useState("");
   const [newsletterState, setNewsletterState] = useState<
     "idle" | "loading" | "success" | "error"
@@ -105,7 +107,6 @@ export function Footer() {
     ? `tel:${s.contactPhone.replace(/[^+\d]/g, "")}`
     : "#";
 
-  // Build the dynamic contact column from fetched settings.
   const contactColumn: FooterColumn = {
     titleAr: "تواصل",
     titleEn: "Connect",
@@ -121,8 +122,8 @@ export function Footer() {
         href: phoneHref,
       },
       {
-        labelAr: s?.contactAddress || "صنعاء القديمة",
-        labelEn: s?.contactAddress || "Old Sana'a",
+        labelAr: s?.contactAddress || "صنعاء القديمة · اليمن",
+        labelEn: s?.contactAddress || "Old Sana'a · Yemen",
         href: "#",
       },
       { labelAr: "احجز جلسة", labelEn: "Book a Session", href: "/booking" },
@@ -130,6 +131,12 @@ export function Footer() {
   };
 
   const footerColumns: FooterColumn[] = [...staticColumns, contactColumn];
+
+  const socials = [
+    { icon: Instagram, label: "Instagram", href: instagramHref },
+    { icon: MessageCircle, label: "WhatsApp", href: whatsappHref },
+    { icon: Mail, label: "Email", href: emailHref },
+  ];
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,7 +151,7 @@ export function Footer() {
       });
       if (res.ok) {
         setNewsletterState("success");
-        setNewsletterMsg("تم الاشتراك بنجاح!");
+        setNewsletterMsg(t("تم الاشتراك بنجاح!", "Subscribed successfully!"));
         setEmail("");
         setTimeout(() => {
           setNewsletterState("idle");
@@ -154,232 +161,227 @@ export function Footer() {
         const data = await res.json().catch(() => ({}));
         setNewsletterState("error");
         setNewsletterMsg(
-          data?.error || "تعذّر الاشتراك. حاول مرة أخرى لاحقًا."
+          data?.error || t("تعذّر الاشتراك. حاول مرة أخرى لاحقًا.", "Could not subscribe. Try again later.")
         );
       }
     } catch {
       setNewsletterState("error");
-      setNewsletterMsg("تعذّر الاتصال بالخادم. حاول مرة أخرى لاحقًا.");
+      setNewsletterMsg(
+        t("تعذّر الاتصال بالخادم. حاول مرة أخرى لاحقًا.", "Network error. Try again later.")
+      );
     }
   };
 
   return (
-    <footer className="relative bg-[oklch(0.04_0.005_285)] border-t border-border/40 pt-20 pb-8 overflow-hidden">
-      {/* Top glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+    <footer className="relative bg-card border-t border-border overflow-hidden">
+      {/* Decorative background wordmark — very subtle texture, not a feature */}
+      <span
+        aria-hidden
+        className="pointer-events-none select-none absolute inset-x-0 bottom-0 text-center font-amiri font-bold leading-none text-foreground/[0.04]"
+        style={{ fontSize: "clamp(4rem, 15vw, 12rem)", transform: "translateY(20%)" }}
+      >
+        {t(siteNameAr, siteNameEn)}
+      </span>
 
-      <div className="container mx-auto max-w-7xl px-6">
-        {/* Top: brand + links */}
-        <div className="grid lg:grid-cols-12 gap-12 mb-16">
-          {/* Brand block */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="flex items-center gap-3">
-              <svg viewBox="0 0 44 44" className="w-12 h-12">
+      <div className="relative container mx-auto max-w-7xl px-6">
+        {/* === TOP: 4-column grid === */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-12 pt-20 pb-12">
+          {/* Brand col */}
+          <div className="col-span-2 md:col-span-1 flex flex-col gap-5">
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-3"
+              aria-label="الصفحة الرئيسية"
+            >
+              <svg viewBox="0 0 36 36" className="w-9 h-9 text-foreground" aria-hidden>
                 <circle
-                  cx="22"
-                  cy="22"
-                  r="20"
+                  cx="18"
+                  cy="18"
+                  r="16.5"
                   fill="none"
-                  stroke="oklch(0.78 0.13 75)"
+                  stroke="currentColor"
                   strokeWidth="1"
+                  className="transition-opacity duration-500 group-hover:opacity-60"
                 />
                 <text
-                  x="22"
-                  y="29"
+                  x="18"
+                  y="24"
                   textAnchor="middle"
-                  className="font-display fill-[oklch(0.85_0.12_80)]"
-                  fontSize="20"
-                  fontWeight="700"
+                  className="font-display fill-current"
+                  fontSize="16"
+                  fontWeight="600"
                 >
                   M
                 </text>
               </svg>
-              <div>
-                <div className="font-amiri text-2xl text-gold-gradient">
-                  {t(siteNameAr, siteNameEn)}
-                </div>
-                <div className="font-display text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
-                  Maryam Photography
-                </div>
-              </div>
-            </div>
+              <span className="flex flex-col leading-none gap-1">
+                <span className="font-amiri text-base text-foreground">{siteNameAr}</span>
+                <span className="font-inter text-[9px] tracking-[0.35em] text-muted-foreground uppercase">
+                  {siteNameEn}
+                </span>
+              </span>
+            </Link>
 
-            <p className="text-muted-foreground leading-loose max-w-md">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               {footerDesc}
             </p>
 
-            {/* Social */}
-            <div className="flex items-center gap-3">
-              {[
-                { icon: Instagram, label: "Instagram", href: instagramHref },
-                { icon: MessageCircle, label: "WhatsApp", href: whatsappHref },
-                { icon: Mail, label: "Email", href: emailHref },
-              ].map((soc, i) => {
+            {/* Social — minimal icons, no bubble circles */}
+            <div className="flex items-center gap-1 pt-1">
+              {socials.map((soc, i) => {
                 const Icon = soc.icon;
+                const external = soc.href.startsWith("http");
                 return (
                   <a
                     key={i}
                     href={soc.href}
-                    target={soc.href.startsWith("http") ? "_blank" : undefined}
-                    rel={
-                      soc.href.startsWith("http")
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
                     aria-label={soc.label}
-                    className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary hover:scale-110 transition-all duration-300"
+                    className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-muted transition-colors duration-300 motion-ease rounded-sm"
                   >
                     <Icon className="w-4 h-4" />
                   </a>
                 );
               })}
             </div>
-
-            {/* Newsletter */}
-            <div className="pt-4 max-w-md">
-              <div className="text-[10px] tracking-[0.4em] text-muted-foreground uppercase mb-3 font-inter">
-                {t("النشرة البريدية", "Newsletter")}
-              </div>
-              <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t(
-                      "بريدك لتصلك آخر الأعمال",
-                      "Your email for latest work"
-                    )}
-                    className="flex-1 px-4 py-2.5 bg-background/50 border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary"
-                  />
-                  <button
-                    type="submit"
-                    disabled={newsletterState === "loading" || newsletterState === "success"}
-                    className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {newsletterState === "loading" ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : newsletterState === "success" ? (
-                      <Check className="w-4 h-4" />
-                    ) : null}
-                    {t("اشترك", "Subscribe")}
-                  </button>
-                </div>
-                {newsletterState === "success" && (
-                  <p className="text-xs text-green-400 flex items-center gap-1.5 px-2">
-                    <Check className="w-3.5 h-3.5" />
-                    {newsletterMsg || t("تم الاشتراك بنجاح!", "Subscribed successfully!")}
-                  </p>
-                )}
-                {newsletterState === "error" && (
-                  <p className="text-xs text-destructive flex items-center gap-1.5 px-2">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {newsletterMsg}
-                  </p>
-                )}
-              </form>
-            </div>
           </div>
 
-          {/* Links */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {footerColumns.map((col, i) => (
-              <div key={i}>
-                <div className="font-inter text-[10px] tracking-[0.4em] text-primary/70 uppercase mb-5">
-                  {t(col.titleAr, col.titleEn)}
-                </div>
-                <div className="font-amiri text-base text-foreground mb-4">
-                  {t(col.titleAr, col.titleEn)}
-                </div>
-                <ul className="space-y-3">
-                  {col.links.map((l, j) => (
-                    <li key={j}>
-                      {l.href.startsWith("/") ? (
-                        <Link
-                          href={l.href}
-                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          {t(l.labelAr, l.labelEn)}
-                        </Link>
-                      ) : (
-                        <a
-                          href={l.href}
-                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          {t(l.labelAr, l.labelEn)}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+          {/* 3 link columns */}
+          {footerColumns.map((col, i) => (
+            <div key={i} className="flex flex-col gap-4">
+              <div className="font-inter text-[10px] tracking-[0.35em] text-primary uppercase">
+                {t(col.titleAr, col.titleEn)}
               </div>
-            ))}
+              <ul className="flex flex-col gap-3">
+                {col.links.map((l, j) => (
+                  <li key={j}>
+                    {l.href.startsWith("/") ? (
+                      <Link
+                        href={l.href}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 motion-ease"
+                      >
+                        {t(l.labelAr, l.labelEn)}
+                      </Link>
+                    ) : (
+                      <a
+                        href={l.href}
+                        target={l.href.startsWith("http") ? "_blank" : undefined}
+                        rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 motion-ease"
+                      >
+                        {t(l.labelAr, l.labelEn)}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* === Newsletter — minimal inline, no card === */}
+        <div className="border-t border-border pt-8 pb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-12">
+            <div className="flex flex-col gap-2">
+              <span className="font-inter text-[10px] tracking-[0.35em] text-primary uppercase">
+                {t("النشرة البريدية", "Newsletter")}
+              </span>
+              <span className="text-sm text-muted-foreground max-w-sm">
+                {t(
+                  "اشترك لتصلك آخر الأعمال والإطلاعات.",
+                  "Subscribe for latest work and updates."
+                )}
+              </span>
+            </div>
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex-1 max-w-md w-full"
+            >
+              <div className="flex items-center gap-3 border-b border-border focus-within:border-border-strong transition-colors duration-300 motion-ease py-2">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t(
+                    "بريدك الإلكتروني",
+                    "Your email"
+                  )}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={
+                    newsletterState === "loading" ||
+                    newsletterState === "success"
+                  }
+                  aria-label={t("اشترك", "Subscribe")}
+                  className="w-9 h-9 flex items-center justify-center text-foreground hover:text-primary transition-colors duration-300 motion-ease disabled:opacity-50"
+                >
+                  {newsletterState === "loading" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : newsletterState === "success" ? (
+                    <Check className="w-4 h-4 text-primary" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                  )}
+                </button>
+              </div>
+              {newsletterState === "success" && (
+                <p className="mt-2 text-xs text-primary flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" />
+                  {newsletterMsg}
+                </p>
+              )}
+              {newsletterState === "error" && (
+                <p className="mt-2 text-xs text-destructive flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {newsletterMsg}
+                </p>
+              )}
+            </form>
           </div>
         </div>
 
-        {/* Big brand mark */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="relative text-center py-10 mb-8 border-y border-border/40"
-        >
-          <div className="font-amiri text-6xl md:text-9xl lg:text-[12rem] font-bold leading-none">
-            <span className="text-gold-gradient opacity-30">
-              {t(siteNameAr, siteNameEn)}
-            </span>
-          </div>
-          <div className="font-display text-xs md:text-sm tracking-[0.5em] text-muted-foreground uppercase mt-3">
-            — M · A · R · Y · A · M —
-          </div>
-        </motion.div>
-
-        {/* Bottom bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+        {/* === BOTTOM BAR — hairline above, copyright right, crafted + back-to-top left === */}
+        <div className="border-t border-border py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* In RTL: first child → visual right (start) */}
+          <span className="text-xs text-muted-foreground">
+            {footerCopyright}
+          </span>
           <div className="flex items-center gap-4">
-            <span>{footerCopyright}</span>
-            <span className="hidden md:inline">·</span>
-            <a href="#" className="hover:text-primary transition-colors">
-              {t("سياسة الخصوصية", "Privacy Policy")}
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              {t("الشروط", "Terms")}
-            </a>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="font-inter tracking-widest uppercase">
+            <span className="font-inter text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
               Crafted in Sana&apos;a
             </span>
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              aria-label="إلى الأعلى"
+              className="w-8 h-8 flex items-center justify-center border border-border text-muted-foreground hover:text-primary hover:border-border-strong transition-colors duration-300 motion-ease rounded-sm"
+              aria-label={t("إلى الأعلى", "Back to top")}
             >
-              <ArrowUp className="w-4 h-4" />
+              <ArrowUp className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Developer signature */}
+        {/* === DEVELOPER SIGNATURE — keep, small, centered, with heart === */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="mt-10 pt-6 border-t border-border/30"
+          transition={{ duration: 0.8, ease: EASE }}
+          className="py-6 border-t border-border/60"
         >
           <a
             href="https://wa.me/967778140990?text=السلام%20عليكم%20وسيم،%20شفت%20موقع%20مريم%20وأعجبني%20عملك"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="group flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300 motion-ease"
             dir="rtl"
           >
             <Code2 className="w-3.5 h-3.5 text-primary/60 group-hover:text-primary transition-colors" />
             <span>صُمّم بكل</span>
-            <Heart className="w-3.5 h-3.5 fill-red-500/80 text-red-500/80 group-hover:scale-110 transition-transform" />
+            <Heart className="w-3.5 h-3.5 fill-destructive/70 text-destructive/70 group-hover:scale-110 transition-transform" />
             <span>وبرمج بواسطة</span>
             <span className="font-amiri text-sm text-primary font-medium group-hover:underline underline-offset-4 transition-all">
               وسيم الزبيري
