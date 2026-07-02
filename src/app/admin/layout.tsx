@@ -22,6 +22,8 @@ import {
   Heart,
   Code2,
   MessageCircle,
+  PenSquare,
+  CalendarCheck,
 } from "lucide-react";
 
 const navItems = [
@@ -29,6 +31,8 @@ const navItems = [
   { href: "/admin/hero", labelAr: "القسم الرئيسي", icon: Sparkles },
   { href: "/admin/about", labelAr: "من أنا", icon: Camera },
   { href: "/admin/projects", labelAr: "الأعمال", icon: Image },
+  { href: "/admin/blog", labelAr: "المدونة", icon: PenSquare },
+  { href: "/admin/bookings", labelAr: "الحجوزات", icon: CalendarCheck },
   { href: "/admin/services", labelAr: "الخدمات", icon: Briefcase },
   { href: "/admin/testimonials", labelAr: "آراء العملاء", icon: MessageSquare },
   { href: "/admin/contact", labelAr: "التواصل والفوتر", icon: Mail },

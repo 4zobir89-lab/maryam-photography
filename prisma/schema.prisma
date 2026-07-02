@@ -179,5 +179,72 @@ model AdminUser {
   updatedAt DateTime @updatedAt
 }
 
+// ===== Contact Messages (from the contact form, sent via WhatsApp) =====
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @default("")
+  phone     String   @default("")
+  service   String   @default("")
+  message   String
+  status    String   @default("new") // new | read | replied | archived
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ===== Blog Articles =====
+model BlogPost {
+  id          Int      @id @default(autoincrement())
+  titleAr     String
+  titleEn     String
+  slug        String   @unique
+  excerptAr   String   @default("")
+  excerptEn   String   @default("")
+  contentAr   String   @default("") // markdown
+  contentEn   String   @default("") // markdown
+  coverImage  String   @default("")
+  category    String   @default("general") // general | tutorials | stories | gear | behind-the-scenes
+  tags        String   @default("") // comma-separated
+  readTime    Int      @default(5) // minutes
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  author      String   @default("Maryam")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+  @@index([category])
+  @@index([slug])
+}
+
+// ===== Booking Requests (from the booking form) =====
+model BookingRequest {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @default("")
+  phone       String
+  service     String   // wedding | portrait | commercial | workshop | other
+  preferredDate DateTime?
+  location    String   @default("")
+  message     String   @default("")
+  status      String   @default("new") // new | confirmed | completed | cancelled
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 // ===== Sessions (used by NextAuth - JWT strategy, no DB sessions needed) =====
 // Using JWT strategy for simplicity and Vercel compatibility
+
+// ===== Newsletter Subscribers (from footer signup form) =====
+model NewsletterSubscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}

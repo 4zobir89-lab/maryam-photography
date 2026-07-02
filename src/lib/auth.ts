@@ -1,12 +1,24 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "maryam-photography-secret-key-change-in-prod"
-);
+// AUTH_SECRET must be set — no insecure fallback. The app will fail to start
+// (module load) if it is missing, which is the desired behavior.
+const SECRET_STRING = process.env.AUTH_SECRET;
+if (!SECRET_STRING) {
+  throw new Error(
+    "AUTH_SECRET environment variable is required. Set it in your .env file or Vercel dashboard."
+  );
+}
+const SECRET = new TextEncoder().encode(SECRET_STRING);
 
 const SESSION_COOKIE = "maryam_admin_session";
 const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
+
+// NOTE: CSRF protection for admin mutations is mitigated via the
+// httpOnly + sameSite=lax cookie settings on the session cookie. No custom
+// CSRF token or X-Requested-With header check is enforced, because lax
+// same-site prevents cross-site browsers from sending the cookie on
+// state-changing cross-origin POST requests (the typical CSRF vector).
 
 export interface SessionPayload {
   userId: string;

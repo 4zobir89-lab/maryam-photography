@@ -467,6 +467,8 @@ export default function ProjectsAdminPage() {
                 <img
                   src={p.imageData}
                   alt={p.titleAr}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -575,6 +577,8 @@ export default function ProjectsAdminPage() {
                       <img
                         src={editing.imageData}
                         alt="preview"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full max-h-[400px] object-contain bg-background/40"
                       />
                       {/* Top right badge */}
@@ -701,6 +705,8 @@ export default function ProjectsAdminPage() {
                             <img
                               src={img.url}
                               alt={img.caption || "gallery image"}
+                              loading="lazy"
+                              decoding="async"
                               className="w-full aspect-square object-cover rounded-sm border border-border"
                             />
                             <button

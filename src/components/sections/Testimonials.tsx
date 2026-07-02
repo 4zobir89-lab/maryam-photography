@@ -14,16 +14,52 @@ type Testimonial = {
   avatar: string;
 };
 
+type Project = {
+  id: number;
+  titleAr: string;
+  titleEn: string;
+  published: boolean;
+};
+
+// Stats are computed dynamically from DB (testimonials + projects).
+// If testimonials array is empty, fall back to "+250" floor for "عميل سعيد"
+// and "5.0★" for "متوسط التقييم". Awards ("+40") is a marketing claim, no DB source.
+function computeStats(testimonials: Testimonial[], projects: Project[]) {
+  const happyClients =
+    testimonials.length > 0 ? `+${testimonials.length}` : "+250";
+  const albumsCount = projects.length;
+  const albums = `+${Math.max(albumsCount, 0)}`;
+  const avgRating =
+    testimonials.length > 0
+      ? `${(
+          testimonials.reduce((sum, t) => sum + (t.rating || 0), 0) /
+          testimonials.length
+        ).toFixed(1)}★`
+      : "5.0★";
+  return [
+    { num: happyClients, labelAr: "عميل سعيد" },
+    { num: albums, labelAr: "ألبوم منجز" },
+    { num: avgRating, labelAr: "متوسط التقييم" },
+    { num: "+40", labelAr: "جائزة وتكريم" },
+  ];
+}
+
 export function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [idx, setIdx] = useState(0);
   const [direction, setDirection] = useState(1);
 
   useEffect(() => {
-    fetch("/api/testimonials")
-      .then((r) => r.json())
-      .then((d) => setTestimonials(Array.isArray(d) ? d : []))
+    Promise.all([
+      fetch("/api/testimonials").then((r) => r.json()),
+      fetch("/api/projects").then((r) => r.json()),
+    ])
+      .then(([t, p]) => {
+        setTestimonials(Array.isArray(t) ? t : []);
+        setProjects(Array.isArray(p) ? p : []);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -192,12 +228,7 @@ export function Testimonials() {
           transition={{ duration: 0.8 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto"
         >
-          {[
-            { num: "+250", labelAr: "عميل سعيد" },
-            { num: "+180", labelAr: "ألبوم منجز" },
-            { num: "5.0★", labelAr: "متوسط التقييم" },
-            { num: "+40", labelAr: "جائزة وتكريم" },
-          ].map((s, i) => (
+          {computeStats(testimonials, projects).map((s, i) => (
             <div key={i} className="text-center">
               <div className="font-display text-4xl text-gold-gradient font-bold mb-2">
                 {s.num}
