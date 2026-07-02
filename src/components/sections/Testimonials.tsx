@@ -22,9 +22,6 @@ type Project = {
   published: boolean;
 };
 
-// Stats are computed dynamically from DB (testimonials + projects).
-// If testimonials array is empty, fall back to "+250" floor for "عميل سعيد"
-// and "5.0★" for "متوسط التقييم". Awards ("+40") is a marketing claim, no DB source.
 function computeStats(testimonials: Testimonial[], projects: Project[]) {
   const happyClients =
     testimonials.length > 0 ? `+${testimonials.length}` : "+250";
@@ -66,14 +63,12 @@ export function Testimonials() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Clamp idx when testimonials change
   useEffect(() => {
     if (idx > 0 && idx >= testimonials.length) {
       setIdx(0);
     }
   }, [testimonials.length, idx]);
 
-  // Keyboard navigation for image viewer
   useEffect(() => {
     if (!viewImage) return;
     const onKey = (e: KeyboardEvent) => {
@@ -116,6 +111,8 @@ export function Testimonials() {
       .map((w) => w[0])
       .join(" ");
 
+  const hasImage = Boolean(current.imageData);
+
   return (
     <section
       id="testimonials"
@@ -144,8 +141,8 @@ export function Testimonials() {
           </h2>
         </motion.div>
 
-        {/* Testimonial card */}
-        <div className="relative max-w-4xl mx-auto">
+        {/* Testimonial card — layout adapts to whether there's an image */}
+        <div className="relative max-w-5xl mx-auto">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={idx}
@@ -154,107 +151,150 @@ export function Testimonials() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction * -50 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="relative glass-card rounded-sm p-8 md:p-14"
+              className={`relative glass-card rounded-sm overflow-hidden ${
+                hasImage
+                  ? "grid md:grid-cols-5"
+                  : "p-8 md:p-14"
+              }`}
             >
-              {/* Big quote icon */}
-              <Quote className="absolute top-8 left-8 w-16 h-16 text-primary/15" />
+              {hasImage ? (
+                <>
+                  {/* ===== Image side — large, full-height, clickable ===== */}
+                  <div className="md:col-span-2 relative bg-black min-h-[280px] md:min-h-[440px] order-1 md:order-1">
+                    <button
+                      onClick={() => setViewImage(current.imageData)}
+                      className="group absolute inset-0 w-full h-full"
+                      aria-label="عرض صورة الشهادة بالحجم الكامل"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={current.imageData}
+                        alt={`شهادة ${current.nameAr}`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      {/* Gradient overlay for readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-              {/* Verified badge — only if has image */}
-              {current.imageData && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, type: "spring" }}
-                  className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full"
-                >
-                  <BadgeCheck className="w-3.5 h-3.5 text-green-400" />
-                  <span className="text-[10px] text-green-400 font-inter tracking-widest uppercase">
-                    موثّقة
-                  </span>
-                </motion.div>
+                      {/* Verified badge — top corner */}
+                      <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-green-500/90 backdrop-blur-md rounded-full shadow-lg">
+                        <BadgeCheck className="w-4 h-4 text-white" />
+                        <span className="text-[10px] text-white font-inter tracking-widest uppercase font-semibold">
+                          موثّقة
+                        </span>
+                      </div>
+
+                      {/* Zoom hint — appears on hover */}
+                      <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-3 py-1.5 bg-black/70 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-inter tracking-wider uppercase">
+                          عرض كامل
+                        </span>
+                      </div>
+
+                      {/* Decorative corner accents */}
+                      <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-primary/60" />
+                      <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-primary/60" />
+                    </button>
+                  </div>
+
+                  {/* ===== Content side ===== */}
+                  <div className="md:col-span-3 p-8 md:p-12 flex flex-col justify-center relative order-2 md:order-2">
+                    {/* Big quote icon — decorative */}
+                    <Quote className="absolute top-6 left-6 w-14 h-14 text-primary/15 rotate-180" />
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-6 relative z-10">
+                      {Array.from({ length: Math.min(current.rating || 0, 5) }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className="w-5 h-5 fill-primary text-primary"
+                        />
+                      ))}
+                      <span className="text-xs text-muted-foreground mr-3 font-inter">
+                        {current.rating || 0}.0
+                      </span>
+                    </div>
+
+                    {/* Quote text */}
+                    <p className="font-amiri text-xl md:text-2xl lg:text-3xl leading-loose text-foreground mb-8 relative z-10">
+                      «{current.quoteAr}»
+                    </p>
+
+                    {/* Hairline divider */}
+                    <div className="hairline w-16 mb-6" />
+
+                    {/* Author info */}
+                    <div className="flex items-center gap-4 relative z-10">
+                      {/* Small avatar — initials only, as accent */}
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center shrink-0">
+                        <span className="font-amiri text-lg text-gold-gradient">
+                          {avatarText}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-amiri text-xl text-foreground mb-0.5">
+                          {current.nameAr}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {current.roleAr}
+                        </div>
+                        <div className="font-inter text-[10px] tracking-[0.3em] text-primary/70 uppercase mt-0.5">
+                          {current.roleEn}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* ===== No image — centered classic layout ===== */}
+                  <Quote className="absolute top-8 left-8 w-16 h-16 text-primary/15" />
+
+                  {/* Rating */}
+                  <div className="flex justify-center gap-1 mb-8">
+                    {Array.from({ length: Math.min(current.rating || 0, 5) }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-5 h-5 fill-primary text-primary"
+                      />
+                    ))}
+                  </div>
+
+                  {/* Quote */}
+                  <p className="font-amiri text-xl md:text-3xl leading-loose text-foreground text-center mb-10 max-w-3xl mx-auto">
+                    «{current.quoteAr}»
+                  </p>
+
+                  {/* Author */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center">
+                      <span className="font-amiri text-2xl text-gold-gradient">
+                        {avatarText}
+                      </span>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-amiri text-xl text-foreground mb-1">
+                        {current.nameAr}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {current.roleAr}
+                      </div>
+                      <div className="font-inter text-[10px] tracking-[0.3em] text-primary/70 uppercase mt-1">
+                        {current.roleEn}
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
-
-              {/* Rating */}
-              <div className="flex justify-center gap-1 mb-8">
-                {Array.from({ length: Math.min(current.rating || 0, 5) }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5 fill-primary text-primary"
-                  />
-                ))}
-              </div>
-
-              {/* Quote */}
-              <p className="font-amiri text-xl md:text-3xl leading-loose text-foreground text-center mb-10 max-w-3xl mx-auto">
-                «{current.quoteAr}»
-              </p>
-
-              {/* Author section — with image or avatar */}
-              <div className="flex flex-col items-center gap-4">
-                {current.imageData ? (
-                  <button
-                    onClick={() => setViewImage(current.imageData)}
-                    className="group relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary/50 hover:border-primary transition-all hover:scale-105"
-                    aria-label="عرض صورة الشهادة بالحجم الكامل"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={current.imageData}
-                      alt={current.nameAr}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
-                      <Maximize2 className="w-6 h-6 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    {/* Verified check on image */}
-                    <div className="absolute -bottom-1 -left-1 w-7 h-7 bg-green-500 rounded-full border-2 border-[oklch(0.06_0.005_285)] flex items-center justify-center">
-                      <BadgeCheck className="w-4 h-4 text-white" />
-                    </div>
-                  </button>
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center">
-                    <span className="font-amiri text-2xl text-gold-gradient">
-                      {avatarText}
-                    </span>
-                  </div>
-                )}
-
-                <div className="text-center">
-                  <div className="font-amiri text-xl text-foreground mb-1">
-                    {current.nameAr}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {current.roleAr}
-                  </div>
-                  <div className="font-inter text-[10px] tracking-[0.3em] text-primary/70 uppercase mt-1">
-                    {current.roleEn}
-                  </div>
-                </div>
-
-                {/* Click-to-view hint for image testimonials */}
-                {current.imageData && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    onClick={() => setViewImage(current.imageData)}
-                    className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors mt-1"
-                  >
-                    <ImageIcon className="w-3 h-3" />
-                    <span>اضغط على الصورة لعرضها بالكامل</span>
-                  </motion.button>
-                )}
-              </div>
             </motion.div>
           </AnimatePresence>
 
-          {/* Nav */}
+          {/* Navigation */}
           <div className="flex items-center justify-center gap-4 mt-10">
             <button
               onClick={prev}
-              className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary hover:scale-110 transition-all"
               aria-label="السابق"
             >
               <ChevronRight className="w-5 h-5" />
@@ -281,11 +321,18 @@ export function Testimonials() {
 
             <button
               onClick={next}
-              className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary hover:scale-110 transition-all"
               aria-label="التالي"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
+          </div>
+
+          {/* Counter */}
+          <div className="text-center mt-4">
+            <span className="text-xs text-muted-foreground font-inter tracking-widest">
+              {String(idx + 1).padStart(2, "0")} / {String(testimonials.length).padStart(2, "0")}
+            </span>
           </div>
         </div>
 
