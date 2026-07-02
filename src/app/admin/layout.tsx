@@ -24,6 +24,7 @@ import {
   MessageCircle,
   PenSquare,
   CalendarCheck,
+  Inbox,
 } from "lucide-react";
 
 const navItems = [
@@ -33,6 +34,7 @@ const navItems = [
   { href: "/admin/projects", labelAr: "الأعمال", icon: Image },
   { href: "/admin/blog", labelAr: "المدونة", icon: PenSquare },
   { href: "/admin/bookings", labelAr: "الحجوزات", icon: CalendarCheck },
+  { href: "/admin/messages", labelAr: "الرسائل", icon: Inbox },
   { href: "/admin/services", labelAr: "الخدمات", icon: Briefcase },
   { href: "/admin/testimonials", labelAr: "آراء العملاء", icon: MessageSquare },
   { href: "/admin/contact", labelAr: "التواصل والفوتر", icon: Mail },
