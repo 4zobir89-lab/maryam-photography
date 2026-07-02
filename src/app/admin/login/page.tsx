@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -25,8 +23,12 @@ export default function AdminLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "خطأ في تسجيل الدخول");
-      router.push("/admin");
-      router.refresh();
+
+      // Success — use hard navigation instead of router.push to ensure the
+      // middleware re-evaluates the cookie on the new request. Using
+      // window.location.href forces a full page load which is more reliable
+      // than client-side navigation when the auth state just changed.
+      window.location.href = "/admin";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "خطأ غير معروف");
     } finally {
