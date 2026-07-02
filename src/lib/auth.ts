@@ -1,12 +1,17 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-// AUTH_SECRET must be set — no insecure fallback. The app will fail to start
-// (module load) if it is missing, which is the desired behavior.
-const SECRET_STRING = process.env.AUTH_SECRET;
-if (!SECRET_STRING) {
-  throw new Error(
-    "AUTH_SECRET environment variable is required. Set it in your .env file or Vercel dashboard."
+// Use AUTH_SECRET if available, otherwise a fallback.
+// We do NOT throw at module load — this would break every API route that
+// imports auth.ts (including login) if AUTH_SECRET is temporarily missing.
+// Instead we log a warning and use a fallback; JWT signing/verification will
+// still work consistently within the same runtime.
+const SECRET_STRING =
+  process.env.AUTH_SECRET || "maryam-photography-dev-fallback-secret";
+if (!process.env.AUTH_SECRET) {
+  console.warn(
+    "[auth] AUTH_SECRET is not set — using insecure fallback. " +
+      "Set AUTH_SECRET in your Vercel dashboard for production."
   );
 }
 const SECRET = new TextEncoder().encode(SECRET_STRING);
