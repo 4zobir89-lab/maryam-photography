@@ -151,7 +151,8 @@ model Testimonial {
   roleAr    String
   roleEn    String
   rating    Int      @default(5)
-  avatar    String   @default("") // letters or base64
+  avatar    String   @default("") // letters or base64 (legacy fallback)
+  imageData String   @default("") // Vercel Blob URL — screenshot/photo of the client's actual message
   order     Int      @default(0)
   published Boolean  @default(true)
   createdAt DateTime @default(now())
