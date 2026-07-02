@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowDown, Aperture, Star } from "lucide-react";
+import { useLang } from "@/components/shared/LanguageProvider";
 
 type Settings = {
   taglineEn: string;
+  taglineAr?: string;
   heroTitleAr: string;
   heroSubtitleEn: string;
   heroDescAr: string;
@@ -22,6 +24,7 @@ type Settings = {
 export function Hero() {
   const [s, setS] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
+  const { lang } = useLang();
 
   useEffect(() => {
     fetch("/api/settings")
@@ -112,24 +115,26 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Arabic name */}
+        {/* Main title — in EN mode show the English subtitle as the big name */}
         <motion.h1
           initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1.4, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="font-amiri text-7xl md:text-9xl lg:text-[12rem] font-bold leading-none mb-4"
         >
-          <span className="text-gold-gradient">{s.heroTitleAr}</span>
+          <span className="text-gold-gradient">
+            {lang === "en" ? s.heroSubtitleEn : s.heroTitleAr}
+          </span>
         </motion.h1>
 
-        {/* English subtitle */}
+        {/* Secondary line — in EN mode show the Arabic name as the smaller subtitle (reversed roles) */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1 }}
           className="font-display text-2xl md:text-4xl tracking-[0.3em] text-foreground/80 uppercase mb-8"
         >
-          {s.heroSubtitleEn}
+          {lang === "en" ? s.heroTitleAr : s.heroSubtitleEn}
         </motion.div>
 
         {/* Tagline */}

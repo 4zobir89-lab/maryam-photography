@@ -16,7 +16,9 @@ import {
   LogIn,
   Activity as ActivityIcon,
   Settings as SettingsIcon,
+  CalendarCheck,
 } from "lucide-react";
+import { timeAgo } from "@/lib/timeAgo";
 
 type ActivityLog = {
   id: number;
@@ -27,24 +29,6 @@ type ActivityLog = {
   username: string;
   createdAt: string;
 };
-
-// Render a relative "time ago" string in Arabic (best-effort, no external dep)
-function timeAgo(dateStr: string): string {
-  const then = new Date(dateStr).getTime();
-  if (!then) return "";
-  const diffMs = Date.now() - then;
-  const sec = Math.floor(diffMs / 1000);
-  if (sec < 60) return "قبل لحظات";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `قبل ${min} دقيقة`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `قبل ${hr} ساعة`;
-  const day = Math.floor(hr / 24);
-  if (day < 30) return `قبل ${day} يوم`;
-  const month = Math.floor(day / 30);
-  if (month < 12) return `قبل ${month} شهر`;
-  return `قبل ${Math.floor(month / 12)} سنة`;
-}
 
 // Pick an icon for an activity entry based on action
 function iconForAction(action: string) {
@@ -63,6 +47,8 @@ function labelForEntity(entity: string): string {
   switch (entity) {
     case "project": return "عمل";
     case "projectImage": return "صورة معرض";
+    case "blogPost": return "مقال";
+    case "bookingRequest": return "حجز";
     case "service": return "خدمة";
     case "testimonial": return "رأي عميل";
     case "philosophy": return "بطاقة فلسفة";
@@ -79,6 +65,7 @@ export default function AdminDashboard() {
     services: 0,
     testimonials: 0,
     featured: 0,
+    newBookings: 0,
   });
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
@@ -89,15 +76,18 @@ export default function AdminDashboard() {
       fetch("/api/projects?all=1").then((r) => r.json()),
       fetch("/api/services?all=1").then((r) => r.json()),
       fetch("/api/testimonials?all=1").then((r) => r.json()),
+      fetch("/api/bookings?status=new").then((r) => r.json()),
     ])
-      .then(([p, s, t]) => {
+      .then(([p, s, t, b]) => {
         setStats({
           projects: p.length || 0,
           services: s.length || 0,
           testimonials: t.length || 0,
           featured: p.filter((x: { featured?: boolean }) => x.featured).length,
+          newBookings: Array.isArray(b) ? b.length : 0,
         });
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
 
     fetch("/api/activity")
@@ -136,10 +126,18 @@ export default function AdminDashboard() {
       href: "/admin/projects",
       color: "from-[oklch(0.7_0.1_60_/_0.2)] to-transparent",
     },
+    {
+      labelAr: "حجوزات جديدة",
+      value: stats.newBookings,
+      icon: CalendarCheck,
+      href: "/admin/bookings",
+      color: "from-[oklch(0.7_0.15_145_/_0.2)] to-transparent",
+    },
   ];
 
   const quickActions = [
     { labelAr: "إضافة عمل جديد", href: "/admin/projects", icon: Plus },
+    { labelAr: "احجز جلسة جديدة", href: "/booking", icon: CalendarCheck },
     { labelAr: "تعديل القسم الرئيسي", href: "/admin/hero", icon: Eye },
     { labelAr: "تعديل بطاقة عن مريم", href: "/admin/about", icon: Eye },
     { labelAr: "تعديل معلومات التواصل", href: "/admin/contact", icon: Eye },
@@ -165,7 +163,7 @@ export default function AdminDashboard() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((c, i) => {
           const Icon = c.icon;
           return (

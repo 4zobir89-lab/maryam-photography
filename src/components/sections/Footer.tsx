@@ -1,53 +1,77 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Instagram, MessageCircle, Mail, ArrowUp, Heart, Code2 } from "lucide-react";
+import {
+  Instagram,
+  MessageCircle,
+  Mail,
+  ArrowUp,
+  Heart,
+  Code2,
+  Loader2,
+  Check,
+  AlertCircle,
+} from "lucide-react";
+import { useLang } from "@/components/shared/LanguageProvider";
 
 type Settings = {
   siteNameAr: string;
+  siteNameEn?: string;
   footerDesc: string;
   footerCopyright: string;
   contactInstagram: string;
   contactWhatsapp: string;
   contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
 };
 
-const footerLinks = [
+type FooterLink = { labelAr: string; labelEn: string; href: string };
+type FooterColumn = {
+  titleAr: string;
+  titleEn: string;
+  links: FooterLink[];
+};
+
+// Static columns (services + explore). The contact column is built dynamically
+// from settings inside the component body.
+const staticColumns: FooterColumn[] = [
   {
     titleAr: "الخدمات",
     titleEn: "Services",
     links: [
-      { labelAr: "تصوير الأعراس", href: "#services" },
-      { labelAr: "بورتريه", href: "#services" },
-      { labelAr: "تصوير تجاري", href: "#services" },
-      { labelAr: "ورش العمل", href: "#services" },
+      { labelAr: "تصوير الأعراس", labelEn: "Weddings", href: "#services" },
+      { labelAr: "بورتريه", labelEn: "Portraits", href: "#services" },
+      { labelAr: "تصوير تجاري", labelEn: "Commercial", href: "#services" },
+      { labelAr: "ورش العمل", labelEn: "Workshops", href: "#services" },
     ],
   },
   {
     titleAr: "الاستكشاف",
     titleEn: "Explore",
     links: [
-      { labelAr: "الرئيسية", href: "#home" },
-      { labelAr: "عن مريم", href: "#about" },
-      { labelAr: "الأعمال", href: "#portfolio" },
-      { labelAr: "آراء العملاء", href: "#testimonials" },
-    ],
-  },
-  {
-    titleAr: "تواصل",
-    titleEn: "Connect",
-    links: [
-      { labelAr: "hello@maryam.photo", href: "mailto:hello@maryam.photo" },
-      { labelAr: "+967 77 123 4567", href: "tel:+967771234567" },
-      { labelAr: "صنعاء القديمة", href: "#" },
-      { labelAr: "احجز جلسة", href: "#contact" },
+      { labelAr: "الرئيسية", labelEn: "Home", href: "#home" },
+      { labelAr: "عن مريم", labelEn: "About", href: "#about" },
+      { labelAr: "الأعمال", labelEn: "Portfolio", href: "#portfolio" },
+      { labelAr: "آراء العملاء", labelEn: "Testimonials", href: "#testimonials" },
+      { labelAr: "المدونة", labelEn: "Blog", href: "/blog" },
+      { labelAr: "المعرض الكامل", labelEn: "Full Gallery", href: "/gallery" },
     ],
   },
 ];
 
 export function Footer() {
   const [s, setS] = useState<Settings | null>(null);
+  const { t } = useLang();
+
+  // Newsletter form state
+  const [email, setEmail] = useState("");
+  const [newsletterState, setNewsletterState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [newsletterMsg, setNewsletterMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/settings")
@@ -57,6 +81,7 @@ export function Footer() {
   }, []);
 
   const siteNameAr = s?.siteNameAr ?? "مريم";
+  const siteNameEn = s?.siteNameEn ?? "Maryam";
   const footerDesc =
     s?.footerDesc ??
     "بصريات سينمائية من قلب صنعاء. أصوّر الحكايات قبل الأشخاص، وألتقط في كل إطار لحظة تستحق أن تُروى.";
@@ -76,6 +101,67 @@ export function Footer() {
         : `https://wa.me/${s.contactWhatsapp.replace(/[^+\d]/g, "")}`
       : "#";
   const emailHref = s?.contactEmail ? `mailto:${s.contactEmail}` : "#";
+  const phoneHref = s?.contactPhone
+    ? `tel:${s.contactPhone.replace(/[^+\d]/g, "")}`
+    : "#";
+
+  // Build the dynamic contact column from fetched settings.
+  const contactColumn: FooterColumn = {
+    titleAr: "تواصل",
+    titleEn: "Connect",
+    links: [
+      {
+        labelAr: s?.contactEmail || "hello@maryam.photo",
+        labelEn: s?.contactEmail || "hello@maryam.photo",
+        href: emailHref,
+      },
+      {
+        labelAr: s?.contactPhone || "+967 77 123 4567",
+        labelEn: s?.contactPhone || "+967 77 123 4567",
+        href: phoneHref,
+      },
+      {
+        labelAr: s?.contactAddress || "صنعاء القديمة",
+        labelEn: s?.contactAddress || "Old Sana'a",
+        href: "#",
+      },
+      { labelAr: "احجز جلسة", labelEn: "Book a Session", href: "/booking" },
+    ],
+  };
+
+  const footerColumns: FooterColumn[] = [...staticColumns, contactColumn];
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setNewsletterState("loading");
+    setNewsletterMsg("");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.ok) {
+        setNewsletterState("success");
+        setNewsletterMsg("تم الاشتراك بنجاح!");
+        setEmail("");
+        setTimeout(() => {
+          setNewsletterState("idle");
+          setNewsletterMsg("");
+        }, 5000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setNewsletterState("error");
+        setNewsletterMsg(
+          data?.error || "تعذّر الاشتراك. حاول مرة أخرى لاحقًا."
+        );
+      }
+    } catch {
+      setNewsletterState("error");
+      setNewsletterMsg("تعذّر الاتصال بالخادم. حاول مرة أخرى لاحقًا.");
+    }
+  };
 
   return (
     <footer className="relative bg-[oklch(0.04_0.005_285)] border-t border-border/40 pt-20 pb-8 overflow-hidden">
@@ -110,7 +196,7 @@ export function Footer() {
               </svg>
               <div>
                 <div className="font-amiri text-2xl text-gold-gradient">
-                  {siteNameAr}
+                  {t(siteNameAr, siteNameEn)}
                 </div>
                 <div className="font-display text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
                   Maryam Photography
@@ -135,7 +221,11 @@ export function Footer() {
                     key={i}
                     href={soc.href}
                     target={soc.href.startsWith("http") ? "_blank" : undefined}
-                    rel={soc.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    rel={
+                      soc.href.startsWith("http")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
                     aria-label={soc.label}
                     className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary hover:scale-110 transition-all duration-300"
                   >
@@ -148,40 +238,78 @@ export function Footer() {
             {/* Newsletter */}
             <div className="pt-4 max-w-md">
               <div className="text-[10px] tracking-[0.4em] text-muted-foreground uppercase mb-3 font-inter">
-                Newsletter
+                {t("النشرة البريدية", "Newsletter")}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="بريدك لتصلك آخر الأعمال"
-                  className="flex-1 px-4 py-2.5 bg-background/50 border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary"
-                />
-                <button className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
-                  اشترك
-                </button>
-              </div>
+              <form onSubmit={handleNewsletterSubmit} className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t(
+                      "بريدك لتصلك آخر الأعمال",
+                      "Your email for latest work"
+                    )}
+                    className="flex-1 px-4 py-2.5 bg-background/50 border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary"
+                  />
+                  <button
+                    type="submit"
+                    disabled={newsletterState === "loading" || newsletterState === "success"}
+                    className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {newsletterState === "loading" ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : newsletterState === "success" ? (
+                      <Check className="w-4 h-4" />
+                    ) : null}
+                    {t("اشترك", "Subscribe")}
+                  </button>
+                </div>
+                {newsletterState === "success" && (
+                  <p className="text-xs text-green-400 flex items-center gap-1.5 px-2">
+                    <Check className="w-3.5 h-3.5" />
+                    {newsletterMsg || t("تم الاشتراك بنجاح!", "Subscribed successfully!")}
+                  </p>
+                )}
+                {newsletterState === "error" && (
+                  <p className="text-xs text-destructive flex items-center gap-1.5 px-2">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {newsletterMsg}
+                  </p>
+                )}
+              </form>
             </div>
           </div>
 
           {/* Links */}
           <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {footerLinks.map((col, i) => (
+            {footerColumns.map((col, i) => (
               <div key={i}>
                 <div className="font-inter text-[10px] tracking-[0.4em] text-primary/70 uppercase mb-5">
-                  {col.titleEn}
+                  {t(col.titleAr, col.titleEn)}
                 </div>
                 <div className="font-amiri text-base text-foreground mb-4">
-                  {col.titleAr}
+                  {t(col.titleAr, col.titleEn)}
                 </div>
                 <ul className="space-y-3">
                   {col.links.map((l, j) => (
                     <li key={j}>
-                      <a
-                        href={l.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {l.labelAr}
-                      </a>
+                      {l.href.startsWith("/") ? (
+                        <Link
+                          href={l.href}
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {t(l.labelAr, l.labelEn)}
+                        </Link>
+                      ) : (
+                        <a
+                          href={l.href}
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {t(l.labelAr, l.labelEn)}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -199,7 +327,9 @@ export function Footer() {
           className="relative text-center py-10 mb-8 border-y border-border/40"
         >
           <div className="font-amiri text-6xl md:text-9xl lg:text-[12rem] font-bold leading-none">
-            <span className="text-gold-gradient opacity-30">{siteNameAr}</span>
+            <span className="text-gold-gradient opacity-30">
+              {t(siteNameAr, siteNameEn)}
+            </span>
           </div>
           <div className="font-display text-xs md:text-sm tracking-[0.5em] text-muted-foreground uppercase mt-3">
             — M · A · R · Y · A · M —
@@ -212,15 +342,15 @@ export function Footer() {
             <span>{footerCopyright}</span>
             <span className="hidden md:inline">·</span>
             <a href="#" className="hover:text-primary transition-colors">
-              سياسة الخصوصية
+              {t("سياسة الخصوصية", "Privacy Policy")}
             </a>
             <a href="#" className="hover:text-primary transition-colors">
-              الشروط
+              {t("الشروط", "Terms")}
             </a>
           </div>
           <div className="flex items-center gap-4">
             <span className="font-inter tracking-widest uppercase">
-              Crafted in Sana'a
+              Crafted in Sana&apos;a
             </span>
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
