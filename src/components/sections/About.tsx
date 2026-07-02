@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, Award, Globe2, Heart, LucideIcon } from "lucide-react";
+import { Camera, Award, Globe2, Heart, Sparkles, Star, LucideIcon } from "lucide-react";
 
 type Settings = {
   aboutTitleAr: string;
@@ -12,6 +12,7 @@ type Settings = {
   aboutPara2: string;
   aboutTags: string;
   aboutSignature: string;
+  aboutImageData: string;
 };
 
 type PhilosophyCard = {
@@ -27,6 +28,8 @@ const iconMap: Record<string, LucideIcon> = {
   Globe2,
   Award,
   Heart,
+  Sparkles,
+  Star,
 };
 
 function LoadingSkeleton() {
@@ -113,7 +116,7 @@ export function About() {
 
         {/* Bio layout */}
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start mb-24">
-          {/* Portrait placeholder */}
+          {/* Portrait — shows uploaded image if available, SVG silhouette as fallback */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -126,69 +129,82 @@ export function About() {
               <div className="absolute -inset-3 border border-primary/30 rounded-sm" />
               <div className="absolute -inset-1.5 border border-primary/15 rounded-sm" />
 
-              {/* Image */}
+              {/* Image container */}
               <div className="relative w-full h-full overflow-hidden rounded-sm bg-gradient-to-br from-[oklch(0.18_0.02_50)] via-[oklch(0.12_0.01_285)] to-[oklch(0.06_0.005_285)]">
-                {/* Silhouette of photographer */}
-                <svg
-                  viewBox="0 0 300 400"
-                  className="absolute inset-0 w-full h-full opacity-90"
-                  preserveAspectRatio="xMidYMid slice"
-                >
-                  <defs>
-                    <radialGradient id="bgGrad" cx="50%" cy="35%" r="60%">
-                      <stop
-                        offset="0%"
-                        stopColor="oklch(0.3 0.08 50)"
-                        stopOpacity="0.5"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="oklch(0.05 0 0)"
-                        stopOpacity="1"
-                      />
-                    </radialGradient>
-                    <linearGradient id="silGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="oklch(0.15 0.02 50)" />
-                      <stop offset="100%" stopColor="oklch(0.04 0 0)" />
-                    </linearGradient>
-                  </defs>
-                  <rect width="300" height="400" fill="url(#bgGrad)" />
-                  {/* Silhouette */}
-                  <ellipse cx="150" cy="140" rx="55" ry="65" fill="url(#silGrad)" />
-                  <path
-                    d="M 80 400 Q 80 250 150 230 Q 220 250 220 400 Z"
-                    fill="url(#silGrad)"
-                  />
-                  {/* Camera */}
-                  <rect
-                    x="120"
-                    y="280"
-                    width="60"
-                    height="40"
-                    rx="4"
-                    fill="oklch(0.1 0 0)"
-                    stroke="oklch(0.78 0.13 75)"
-                    strokeWidth="1"
-                  />
-                  <circle cx="150" cy="300" r="10" fill="none" stroke="oklch(0.78 0.13 75)" strokeWidth="1" />
-                  <circle cx="150" cy="300" r="5" fill="oklch(0.78 0.13 75)" opacity="0.5" />
-                </svg>
+                {s.aboutImageData ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={s.aboutImageData}
+                      alt="مريم"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    {/* Subtle gradient overlay for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                  </>
+                ) : (
+                  /* Silhouette of photographer (fallback when no portrait uploaded) */
+                  <svg
+                    viewBox="0 0 300 400"
+                    className="absolute inset-0 w-full h-full opacity-90"
+                    preserveAspectRatio="xMidYMid slice"
+                  >
+                    <defs>
+                      <radialGradient id="bgGrad" cx="50%" cy="35%" r="60%">
+                        <stop
+                          offset="0%"
+                          stopColor="oklch(0.3 0.08 50)"
+                          stopOpacity="0.5"
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="oklch(0.05 0 0)"
+                          stopOpacity="1"
+                        />
+                      </radialGradient>
+                      <linearGradient id="silGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="oklch(0.15 0.02 50)" />
+                        <stop offset="100%" stopColor="oklch(0.04 0 0)" />
+                      </linearGradient>
+                    </defs>
+                    <rect width="300" height="400" fill="url(#bgGrad)" />
+                    {/* Silhouette */}
+                    <ellipse cx="150" cy="140" rx="55" ry="65" fill="url(#silGrad)" />
+                    <path
+                      d="M 80 400 Q 80 250 150 230 Q 220 250 220 400 Z"
+                      fill="url(#silGrad)"
+                    />
+                    {/* Camera */}
+                    <rect
+                      x="120"
+                      y="280"
+                      width="60"
+                      height="40"
+                      rx="4"
+                      fill="oklch(0.1 0 0)"
+                      stroke="oklch(0.78 0.13 75)"
+                      strokeWidth="1"
+                    />
+                    <circle cx="150" cy="300" r="10" fill="none" stroke="oklch(0.78 0.13 75)" strokeWidth="1" />
+                    <circle cx="150" cy="300" r="5" fill="oklch(0.78 0.13 75)" opacity="0.5" />
+                  </svg>
+                )}
 
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-
-                {/* Caption */}
-                <div className="absolute bottom-6 right-6 left-6">
-                  <div className="text-[10px] tracking-[0.4em] text-primary/80 uppercase font-inter mb-1">
-                    Portrait
+                {/* Caption — only on fallback (on real photo, the photo speaks for itself) */}
+                {!s.aboutImageData && (
+                  <div className="absolute bottom-6 right-6 left-6">
+                    <div className="text-[10px] tracking-[0.4em] text-primary/80 uppercase font-inter mb-1">
+                      Portrait
+                    </div>
+                    <div className="font-amiri text-2xl text-foreground">
+                      مريم
+                    </div>
+                    <div className="font-display text-xs tracking-[0.2em] text-muted-foreground uppercase">
+                      Maryam
+                    </div>
                   </div>
-                  <div className="font-amiri text-2xl text-foreground">
-                    مريم الحضرمي
-                  </div>
-                  <div className="font-display text-xs tracking-[0.2em] text-muted-foreground uppercase">
-                    Sana'a · 2024
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Floating badge */}
