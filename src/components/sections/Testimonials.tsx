@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Quote, Star, ChevronLeft, ChevronRight, Maximize2, X, BadgeCheck, Image as ImageIcon } from "lucide-react";
 
 type Testimonial = {
   id: number;
@@ -12,6 +12,7 @@ type Testimonial = {
   roleEn: string;
   rating: number;
   avatar: string;
+  imageData: string; // Vercel Blob URL — screenshot/photo of the client's actual message
 };
 
 export function Testimonials() {
@@ -19,6 +20,7 @@ export function Testimonials() {
   const [loading, setLoading] = useState(true);
   const [idx, setIdx] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [viewImage, setViewImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/testimonials")
@@ -28,12 +30,22 @@ export function Testimonials() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Clamp idx when testimonials change so we never point past the end
+  // Clamp idx when testimonials change
   useEffect(() => {
     if (idx > 0 && idx >= testimonials.length) {
       setIdx(0);
     }
   }, [testimonials.length, idx]);
+
+  // Keyboard navigation for image viewer
+  useEffect(() => {
+    if (!viewImage) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setViewImage(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewImage]);
 
   const next = () => {
     setDirection(1);
@@ -75,7 +87,10 @@ export function Testimonials() {
     >
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-      <div className="container mx-auto max-w-7xl px-6">
+      {/* Decorative glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] rounded-full bg-[oklch(0.78_0.13_75_/_0.04)] blur-[150px] pointer-events-none" />
+
+      <div className="container mx-auto max-w-7xl px-6 relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -105,8 +120,23 @@ export function Testimonials() {
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="relative glass-card rounded-sm p-8 md:p-14"
             >
-              {/* Big quote */}
+              {/* Big quote icon */}
               <Quote className="absolute top-8 left-8 w-16 h-16 text-primary/15" />
+
+              {/* Verified badge — only if has image */}
+              {current.imageData && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, type: "spring" }}
+                  className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full"
+                >
+                  <BadgeCheck className="w-3.5 h-3.5 text-green-400" />
+                  <span className="text-[10px] text-green-400 font-inter tracking-widest uppercase">
+                    موثّقة
+                  </span>
+                </motion.div>
+              )}
 
               {/* Rating */}
               <div className="flex justify-center gap-1 mb-8">
@@ -123,13 +153,38 @@ export function Testimonials() {
                 «{current.quoteAr}»
               </p>
 
-              {/* Author */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center">
-                  <span className="font-amiri text-xl text-gold-gradient">
-                    {avatarText}
-                  </span>
-                </div>
+              {/* Author section — with image or avatar */}
+              <div className="flex flex-col items-center gap-4">
+                {current.imageData ? (
+                  <button
+                    onClick={() => setViewImage(current.imageData)}
+                    className="group relative w-24 h-24 rounded-full overflow-hidden border-2 border-primary/50 hover:border-primary transition-all hover:scale-105"
+                    aria-label="عرض صورة الشهادة بالحجم الكامل"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={current.imageData}
+                      alt={current.nameAr}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
+                      <Maximize2 className="w-6 h-6 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    {/* Verified check on image */}
+                    <div className="absolute -bottom-1 -left-1 w-7 h-7 bg-green-500 rounded-full border-2 border-[oklch(0.06_0.005_285)] flex items-center justify-center">
+                      <BadgeCheck className="w-4 h-4 text-white" />
+                    </div>
+                  </button>
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center">
+                    <span className="font-amiri text-2xl text-gold-gradient">
+                      {avatarText}
+                    </span>
+                  </div>
+                )}
+
                 <div className="text-center">
                   <div className="font-amiri text-xl text-foreground mb-1">
                     {current.nameAr}
@@ -141,6 +196,20 @@ export function Testimonials() {
                     {current.roleEn}
                   </div>
                 </div>
+
+                {/* Click-to-view hint for image testimonials */}
+                {current.imageData && (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    onClick={() => setViewImage(current.imageData)}
+                    className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors mt-1"
+                  >
+                    <ImageIcon className="w-3 h-3" />
+                    <span>اضغط على الصورة لعرضها بالكامل</span>
+                  </motion.button>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -209,6 +278,54 @@ export function Testimonials() {
           ))}
         </motion.div>
       </div>
+
+      {/* ===== Image viewer lightbox ===== */}
+      <AnimatePresence>
+        {viewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setViewImage(null)}
+            className="fixed inset-0 z-[90] bg-background/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-10"
+          >
+            <button
+              onClick={() => setViewImage(null)}
+              className="absolute top-4 left-4 w-12 h-12 rounded-full border border-border bg-background/60 backdrop-blur flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors z-10"
+              aria-label="إغلاق"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Verified badge in lightbox */}
+            <div className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full backdrop-blur">
+              <BadgeCheck className="w-4 h-4 text-green-400" />
+              <span className="text-xs text-green-400 font-inter tracking-widest uppercase">
+                شهادة موثّقة
+              </span>
+            </div>
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-3xl w-full"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={viewImage}
+                alt="شهادة العميل"
+                className="w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-primary/20"
+              />
+              <p className="text-center text-xs text-muted-foreground mt-4 font-inter tracking-widest uppercase">
+                ✦ شهادة عميل حقيقية ✦
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

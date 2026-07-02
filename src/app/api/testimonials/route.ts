@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
         roleEn: body.roleEn || "",
         rating: body.rating ?? 5,
         avatar: body.avatar || "",
+        imageData: body.imageData || "",
         order: body.order ?? (maxOrder._max.order || 0) + 1,
         published: body.published ?? true,
       },
