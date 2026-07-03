@@ -651,3 +651,27 @@ Stage Summary:
 - Portfolio: masonry layout preserved, filter pills with count badges, redesigned lightbox with surface-card info panel, CTA links to /gallery.
 - Testimonials: 2-col image+content layout with verified badge + corner accents, vertical-hairline-separated stats bar, dots/counter navigation preserved.
 - Existing API fetch patterns and MotifSvg fallback preserved. No other files touched.
+
+---
+Task ID: rebuild-subpages
+Agent: general-purpose
+Task: Rebuild blog, gallery, booking pages to match cinematic design
+
+Work Log:
+- Read reference design system: globals.css (design tokens, .eyebrow/.section-title/.body-lg/.hairline/.surface-card/.lift-card/.text-gold-gradient utilities, EASE constant), Hero.tsx (motion pattern + EASE), About.tsx (editorial left-aligned header pattern), Portfolio.tsx (card + lightbox patterns).
+- Rebuilt `/src/app/blog/page.tsx` as a server component. SSR-fetches posts via `db.blogPost.findMany` filtered by `searchParams.category` (validated against 5 valid categories). Renders Navbar + `<BlogClient>` + Footer. Removed `CursorGlow`, decorative blur orbs, and centered hero — now editorial left-aligned.
+- Created `/src/app/blog/BlogClient.tsx` (client component) which renders: editorial hero (eyebrow `JOURNAL` + section-title `مدوّنة مريم` split gold/foreground + body-lg subtitle), category filter pills (`rounded-md`, active=`bg-primary`, inactive=`border border-border`), featured strip when category=null, post grid `sm:grid-cols-2 lg:grid-cols-3 gap-6`, PostCard with `aspect-[4/3]` cover (or gradient + PenSquare fallback), category eyebrow + Arabic date, `font-amiri text-xl` title, `text-sm text-muted-foreground line-clamp-2` excerpt, "اقرأ المزيد ←" link + read-time, `surface-card` + `lift-card` hover. Minimal empty state.
+- Rebuilt `/src/app/gallery/page.tsx` as a server component. SSR-fetches published projects with images, flattens into `GalleryImage[]` (cover + per-project images), returns `{ images, projectCount }`. Renders Navbar + `<GalleryClient>` + Footer. Removed CursorGlow and decorative orbs.
+- Rebuilt `/src/components/gallery/GalleryClient.tsx` (client component, now accepts `projectCount` prop): editorial hero (eyebrow `FULL GALLERY` + section-title `المعرض الكامل` + body-lg + stats line `X صورة في Y مشروع`), filter bar (category pills `rounded-md` + layout toggle `Columns3`/`LayoutGrid` + sort dropdown), count hairline, masonry (`columns-1 sm:columns-2 lg:columns-3 gap-4`) or grid layout, GalleryThumb with natural aspect + hover overlay caption + `MotifSvg` fallback for empty URLs, lightbox with hairline borders, top bar (eyebrow + counter + close), prev/next buttons (RTL: `ChevronRight`=prev, `ChevronLeft`=next), keyboard nav (Esc/arrows), info panel with title/description. No glassmorphism.
+- Rebuilt `/src/app/booking/page.tsx` (client component): editorial hero (eyebrow `BOOK A SESSION` + section-title `احجزي جلسة تصوير` + body-lg), 2-col layout `lg:grid-cols-12` with form `lg:col-span-7` and info `lg:col-span-5`. Form uses underline-style inputs (`bg-transparent border-0 border-b border-border focus:border-primary`) for Name/Phone/Email/Service/Date/Location/Message, solid primary submit button "إرسال الطلب", success state with checkmark (primary-colored circle, hairline border) + WhatsApp reminder + new-booking reset. Info panel: WHAT TO EXPECT (3 items with Camera/Sparkles/Clock icons), RESPONSE TIME note, CONTACT info (phone/email/address/WhatsApp), portfolio link card. Uses `useLang()` for all strings, POSTs to `/api/bookings`. Removed CursorGlow and decorative orbs.
+- All three pages use `const EASE = [0.22, 0.61, 0.36, 1] as const;`, framer-motion with `whileInView` reveal, `surface-card`/`lift-card`/`hairline` classes, `eyebrow`/`section-title`/`body-lg` typography, plain `<img loading="lazy" decoding="async" />`, `rounded-md` for pills (NOT `rounded-full`), neutral hairline borders, gold reserved for accent only.
+- Verified `npx tsc --noEmit` passes with exit code 0 (no type errors).
+
+Stage Summary:
+- 4 files modified: `src/app/blog/page.tsx`, `src/app/gallery/page.tsx`, `src/components/gallery/GalleryClient.tsx`, `src/app/booking/page.tsx`.
+- 1 file created: `src/app/blog/BlogClient.tsx`.
+- All three sub-pages now match the cinematic quiet-luxury design language used by Hero/About/Portfolio: editorial left-aligned headers, gold as accent only, neutral hairlines, solid surface-card containers, generous whitespace, unified EASE motion.
+- Blog: SSR + searchParams filter + PostCard grid with featured strip.
+- Gallery: SSR + client filter/sort/layout + masonry/grid + clean lightbox with keyboard nav.
+- Booking: client form with underline inputs + 2-col info panel + success state with WhatsApp reminder.
+- No other files touched. TypeScript clean.
