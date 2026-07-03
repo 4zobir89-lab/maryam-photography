@@ -9,7 +9,6 @@ import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 const navItems = [
-  { id: "home", labelAr: "الرئيسية", labelEn: "Home", href: "/" },
   { id: "about", labelAr: "عن مريم", labelEn: "About", href: "/#about" },
   { id: "portfolio", labelAr: "الأعمال", labelEn: "Work", href: "/#portfolio" },
   { id: "services", labelAr: "الخدمات", labelEn: "Services", href: "/#services" },
@@ -25,7 +24,7 @@ export function Navbar() {
   const { t } = useLang();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -38,36 +37,23 @@ export function Navbar() {
   return (
     <>
       <motion.header
-        initial={{ y: -80, opacity: 0 }}
+        initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: EASE }}
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-700 motion-ease ${
+        transition={{ duration: 0.7, ease: EASE }}
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 motion-ease ${
           scrolled
-            ? "glass-strong border-b border-[var(--glass-border)] py-3"
+            ? "bg-background/85 backdrop-blur-md border-b border-border py-3"
             : "bg-transparent py-5"
         }`}
       >
         <nav className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          {/* Logo — refined mark */}
-          <Link href="/" className="group flex items-center gap-3">
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <motion.div
-                className="absolute inset-0 rounded-full border border-primary/30"
-                initial={{ rotate: 0 }}
-                animate={{ rotate: scrolled ? 180 : 0 }}
-                transition={{ duration: 0.8, ease: EASE }}
-              />
-              <span className="font-amiri text-lg text-gold-gradient font-bold">م</span>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-amiri text-base text-foreground">مريم</span>
-              <span className="font-inter text-[8px] tracking-[0.3em] text-muted-foreground uppercase mt-0.5">
-                Maryam
-              </span>
-            </div>
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="font-amiri text-lg text-foreground">مريم</span>
+            <span className="font-inter text-[8px] tracking-[0.3em] text-muted-foreground uppercase hidden sm:inline">Maryam</span>
           </Link>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — 5 links only */}
           <ul className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
               <li key={item.id}>
@@ -82,7 +68,7 @@ export function Navbar() {
             ))}
           </ul>
 
-          {/* Right cluster */}
+          {/* Right — toggles + CTA */}
           <div className="flex items-center gap-2">
             <div className="hidden md:flex items-center gap-1">
               <LanguageToggle />
@@ -90,13 +76,13 @@ export function Navbar() {
             </div>
             <Link
               href="/booking"
-              className="hidden md:inline-flex items-center px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium tracking-wide rounded-full hover:bg-primary/90 transition-all duration-300 motion-ease shadow-gold"
+              className="hidden md:inline-flex items-center px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity duration-300 motion-ease"
             >
-              {t("احجزي جلسة", "Book a Session")}
+              {t("احجزي", "Book")}
             </Link>
             <button
               onClick={() => setMenuOpen(true)}
-              className="lg:hidden w-10 h-10 flex items-center justify-center text-foreground"
+              className="lg:hidden w-9 h-9 flex items-center justify-center text-foreground"
               aria-label="Menu"
             >
               <Menu className="w-5 h-5" strokeWidth={1.5} />
@@ -105,51 +91,41 @@ export function Navbar() {
         </nav>
       </motion.header>
 
-      {/* Mobile overlay — full screen cinematic */}
+      {/* Mobile overlay */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: EASE }}
-            className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-2xl flex flex-col lg:hidden"
+            transition={{ duration: 0.4, ease: EASE }}
+            className="fixed inset-0 z-[60] bg-background flex flex-col lg:hidden"
           >
-            {/* Ambient glow */}
-            <div className="absolute top-1/4 right-0 w-72 h-72 rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
-
-            <div className="relative h-16 px-6 flex items-center justify-between border-b border-border">
-              <span className="font-amiri text-lg text-gold-gradient">مريم</span>
-              <button onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Close">
+            <div className="h-16 px-6 flex items-center justify-between border-b border-border">
+              <span className="font-amiri text-lg text-foreground">مريم</span>
+              <button onClick={() => setMenuOpen(false)} className="w-9 h-9 flex items-center justify-center" aria-label="Close">
                 <X className="w-5 h-5" strokeWidth={1.5} />
               </button>
             </div>
-
-            <ul className="flex-1 flex flex-col items-center justify-center gap-7 relative">
+            <ul className="flex-1 flex flex-col items-center justify-center gap-7">
               {navItems.map((item, i) => (
                 <motion.li
                   key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.06, duration: 0.5, ease: EASE }}
                 >
                   <Link
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
-                    className="font-amiri text-3xl text-foreground hover:text-gold-gradient transition-all duration-300"
+                    className="font-amiri text-2xl text-foreground hover:text-primary transition-colors"
                   >
                     {t(item.labelAr, item.labelEn)}
                   </Link>
                 </motion.li>
               ))}
             </ul>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5, ease: EASE }}
-              className="relative p-6 border-t border-border flex items-center justify-between"
-            >
+            <div className="p-6 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <LanguageToggle />
                 <ThemeToggle />
@@ -157,11 +133,11 @@ export function Navbar() {
               <Link
                 href="/booking"
                 onClick={() => setMenuOpen(false)}
-                className="px-6 py-3 bg-primary text-primary-foreground text-sm font-medium rounded-full"
+                className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium"
               >
                 {t("احجزي جلسة", "Book a Session")}
               </Link>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

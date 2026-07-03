@@ -4,9 +4,14 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ================================================================
-   MARYAM — Luxury Cinematic Design System
-   Black Velvet · Champagne Gold · Glassmorphism Premium
-   Editorial · Immersive · Award-worthy
+   MARYAM — Award-Grade Design System
+   One identity. Every section tells a chapter.
+   ================================================================
+
+   SPACING SCALE (rem): 0.25 / 0.5 / 1 / 1.5 / 2 / 3 / 4 / 6 / 8 / 12 / 16 / 24
+   RADIUS SCALE: 0 / 2 / 4 / 8 / 12 / 16 / 24 / full
+   TYPE SCALE: 12 / 13 / 14 / 16 / 18 / 22 / 28 / 40 / 56 / 80 / 128
+   MOTION: cubic-bezier(0.22, 0.61, 0.36, 1) — one easing only
    ================================================================ */
 
 @theme inline {
@@ -47,146 +52,95 @@
   --font-amiri: var(--font-amiri);
   --font-inter: var(--font-inter);
   --radius-sm: 2px;
-  --radius-md: 6px;
-  --radius-lg: 12px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
 }
 
-/* ===== DARK — Black Velvet (default) ===== */
+/* ===== DARK — Velvet Black ===== */
 :root, .dark {
   color-scheme: dark;
-
-  /* Surfaces — black velvet with warm depth */
-  --background: oklch(7% 0.005 285);
-  --foreground: oklch(95% 0.008 85);
-  --card: oklch(11% 0.006 285);
-  --card-foreground: oklch(95% 0.008 85);
-  --popover: oklch(12% 0.006 285);
-  --popover-foreground: oklch(95% 0.008 85);
-
-  /* Primary — champagne gold */
-  --primary: oklch(82% 0.13 80);
-  --primary-foreground: oklch(9% 0.005 285);
-
-  /* Secondary — warm charcoal */
-  --secondary: oklch(15% 0.006 285);
-  --secondary-foreground: oklch(90% 0.008 85);
-
-  /* Muted */
-  --muted: oklch(13% 0.005 285);
-  --muted-foreground: oklch(62% 0.008 85);
-
-  /* Accent — rose gold */
-  --accent: oklch(74% 0.10 50);
-  --accent-foreground: oklch(9% 0.005 285);
-
-  /* Destructive */
+  --background: oklch(8% 0.004 285);
+  --foreground: oklch(96% 0.005 85);
+  --card: oklch(12% 0.004 285);
+  --card-foreground: oklch(96% 0.005 85);
+  --popover: oklch(13% 0.004 285);
+  --popover-foreground: oklch(96% 0.005 85);
+  --primary: oklch(80% 0.13 80);
+  --primary-foreground: oklch(8% 0.004 285);
+  --secondary: oklch(15% 0.004 285);
+  --secondary-foreground: oklch(90% 0.005 85);
+  --muted: oklch(14% 0.004 285);
+  --muted-foreground: oklch(64% 0.005 85);
+  --accent: oklch(72% 0.10 50);
+  --accent-foreground: oklch(8% 0.004 285);
   --destructive: oklch(58% 0.18 25);
   --destructive-foreground: oklch(98% 0.005 85);
-
-  /* Borders — subtle warm */
-  --border: oklch(95% 0.01 85 / 0.09);
-  --input: oklch(18% 0.006 285);
-  --ring: oklch(82% 0.13 80 / 0.45);
-
-  /* Charts */
-  --chart-1: oklch(82% 0.13 80);
-  --chart-2: oklch(74% 0.10 50);
-  --chart-3: oklch(60% 0.08 40);
+  --border: oklch(96% 0.005 85 / 0.08);
+  --input: oklch(18% 0.004 285);
+  --ring: oklch(80% 0.13 80 / 0.4);
+  --chart-1: oklch(80% 0.13 80);
+  --chart-2: oklch(72% 0.10 50);
+  --chart-3: oklch(58% 0.08 40);
   --chart-4: oklch(45% 0.06 30);
-  --chart-5: oklch(90% 0.05 88);
-
-  /* Sidebar */
-  --sidebar: oklch(9% 0.005 285);
-  --sidebar-foreground: oklch(95% 0.008 85);
-  --sidebar-primary: oklch(82% 0.13 80);
-  --sidebar-primary-foreground: oklch(9% 0.005 285);
-  --sidebar-accent: oklch(16% 0.006 285);
-  --sidebar-accent-foreground: oklch(95% 0.008 85);
-  --sidebar-border: oklch(95% 0.01 85 / 0.07);
-  --sidebar-ring: oklch(82% 0.13 80 / 0.45);
-
-  /* Selection */
-  --selection-bg: oklch(82% 0.13 80 / 0.22);
+  --chart-5: oklch(88% 0.05 88);
+  --sidebar: oklch(10% 0.004 285);
+  --sidebar-foreground: oklch(96% 0.005 85);
+  --sidebar-primary: oklch(80% 0.13 80);
+  --sidebar-primary-foreground: oklch(8% 0.004 285);
+  --sidebar-accent: oklch(16% 0.004 285);
+  --sidebar-accent-foreground: oklch(96% 0.005 85);
+  --sidebar-border: oklch(96% 0.005 85 / 0.06);
+  --sidebar-ring: oklch(80% 0.13 80 / 0.4);
+  --selection-bg: oklch(80% 0.13 80 / 0.2);
   --selection-fg: oklch(98% 0.005 85);
-
-  /* Radius */
-  --radius: 12px;
-
-  /* Custom — luxury shadows + glows */
-  --shadow-velvet: 0 25px 60px -15px oklch(0% 0 0 / 0.7);
-  --shadow-gold-glow: 0 0 40px oklch(82% 0.13 80 / 0.15), 0 0 80px oklch(82% 0.13 80 / 0.06);
-  --shadow-card-hover: 0 30px 80px -20px oklch(0% 0 0 / 0.8), 0 0 40px oklch(82% 0.13 80 / 0.08);
-
-  /* Glass tokens */
-  --glass-bg: oklch(95% 0.01 85 / 0.04);
-  --glass-border: oklch(95% 0.01 85 / 0.10);
-  --glass-blur: 24px;
+  --radius: 8px;
 }
 
-/* ===== LIGHT — Warm Ivory / Sand ===== */
+/* ===== LIGHT — Warm Ivory ===== */
 .light {
   color-scheme: light;
-
-  --background: oklch(97% 0.008 85);
-  --foreground: oklch(20% 0.008 285);
-  --card: oklch(99% 0.005 85);
-  --card-foreground: oklch(20% 0.008 285);
-  --popover: oklch(99% 0.005 85);
-  --popover-foreground: oklch(20% 0.008 285);
-
+  --background: oklch(97% 0.006 85);
+  --foreground: oklch(20% 0.006 285);
+  --card: oklch(99% 0.004 85);
+  --card-foreground: oklch(20% 0.006 285);
+  --popover: oklch(99% 0.004 85);
+  --popover-foreground: oklch(20% 0.006 285);
   --primary: oklch(50% 0.12 75);
   --primary-foreground: oklch(98% 0.005 85);
-
-  --secondary: oklch(93% 0.008 85);
-  --secondary-foreground: oklch(28% 0.008 285);
-
-  --muted: oklch(94% 0.006 85);
-  --muted-foreground: oklch(45% 0.008 285);
-
+  --secondary: oklch(93% 0.006 85);
+  --secondary-foreground: oklch(28% 0.006 285);
+  --muted: oklch(94% 0.005 85);
+  --muted-foreground: oklch(45% 0.006 285);
   --accent: oklch(55% 0.10 50);
   --accent-foreground: oklch(98% 0.005 85);
-
   --destructive: oklch(50% 0.16 25);
   --destructive-foreground: oklch(98% 0.005 85);
-
-  --border: oklch(20% 0.008 285 / 0.10);
-  --input: oklch(90% 0.008 85);
-  --ring: oklch(50% 0.12 75 / 0.4);
-
+  --border: oklch(20% 0.006 285 / 0.10);
+  --input: oklch(90% 0.006 85);
+  --ring: oklch(50% 0.12 75 / 0.35);
   --chart-1: oklch(50% 0.12 75);
   --chart-2: oklch(55% 0.10 50);
   --chart-3: oklch(46% 0.08 40);
   --chart-4: oklch(38% 0.06 30);
   --chart-5: oklch(70% 0.08 88);
-
-  --sidebar: oklch(95% 0.006 85);
-  --sidebar-foreground: oklch(20% 0.008 285);
+  --sidebar: oklch(95% 0.005 85);
+  --sidebar-foreground: oklch(20% 0.006 285);
   --sidebar-primary: oklch(50% 0.12 75);
   --sidebar-primary-foreground: oklch(98% 0.005 85);
-  --sidebar-accent: oklch(92% 0.006 85);
-  --sidebar-accent-foreground: oklch(20% 0.008 285);
-  --sidebar-border: oklch(20% 0.008 285 / 0.08);
-  --sidebar-ring: oklch(50% 0.12 75 / 0.4);
-
-  --selection-bg: oklch(50% 0.12 75 / 0.18);
-  --selection-fg: oklch(20% 0.008 285);
-
-  --shadow-velvet: 0 25px 60px -15px oklch(20% 0.008 285 / 0.15);
-  --shadow-gold-glow: 0 0 40px oklch(50% 0.12 75 / 0.10);
-  --shadow-card-hover: 0 30px 80px -20px oklch(20% 0.008 285 / 0.18);
-
-  --glass-bg: oklch(99% 0.005 85 / 0.6);
-  --glass-border: oklch(20% 0.008 285 / 0.08);
-  --glass-blur: 24px;
+  --sidebar-accent: oklch(92% 0.005 85);
+  --sidebar-accent-foreground: oklch(20% 0.006 285);
+  --sidebar-border: oklch(20% 0.006 285 / 0.08);
+  --sidebar-ring: oklch(50% 0.12 75 / 0.35);
+  --selection-bg: oklch(50% 0.12 75 / 0.15);
+  --selection-fg: oklch(20% 0.006 285);
 }
 
 /* ===== BASE ===== */
 @layer base {
-  * {
-    border-color: var(--border);
-  }
+  * { border-color: var(--border); }
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -198,36 +152,47 @@
     font-family: var(--font-tajawal), var(--font-inter), system-ui, sans-serif;
     font-feature-settings: "kern", "liga", "calt";
     overflow-x: hidden;
+    text-rendering: optimizeLegibility;
   }
-  ::selection {
-    background: var(--selection-bg);
-    color: var(--selection-fg);
-  }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: var(--background); }
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--primary), var(--accent));
-    border-radius: 4px;
-  }
+  ::selection { background: var(--selection-bg); color: var(--selection-fg); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--muted-foreground); opacity: 0.3; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
   * { scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
+  /* Focus visible — accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
 /* ================================================================
-   TYPOGRAPHY — Editorial Luxury Scale
+   TYPOGRAPHY — Strict Scale
+   12 / 13 / 14 / 16 / 18 / 22 / 28 / 40 / 56 / 80 / 128
    ================================================================ */
 
-/* Eyebrow — tiny label, gold, wide tracking */
 .eyebrow {
   font-family: var(--font-inter), sans-serif;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--primary);
   line-height: 1;
 }
 
-/* Display — massive, elegant, for hero only */
+.eyebrow-sm {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  line-height: 1;
+}
+
 .display-heading {
   font-family: var(--font-amiri), serif;
   font-weight: 700;
@@ -235,24 +200,21 @@
   letter-spacing: -0.01em;
 }
 
-/* Section title — heavy, anchoring */
 .section-title {
   font-family: var(--font-amiri), serif;
   font-weight: 700;
-  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
   line-height: 1.05;
   letter-spacing: -0.005em;
 }
 
-/* Card title */
 .card-title {
   font-family: var(--font-amiri), serif;
   font-weight: 700;
-  font-size: 1.5rem;
-  line-height: 1.2;
+  font-size: 1.375rem;
+  line-height: 1.25;
 }
 
-/* Body large — lead paragraphs */
 .body-lg {
   font-size: 1.0625rem;
   line-height: 1.85;
@@ -260,7 +222,6 @@
   font-weight: 400;
 }
 
-/* Body */
 .body-base {
   font-size: 0.9375rem;
   line-height: 1.75;
@@ -268,30 +229,17 @@
   font-weight: 400;
 }
 
-/* Motion ease */
 .motion-ease { transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1); }
-
-/* Font families */
 .font-display { font-family: var(--font-playfair), serif; }
 .font-amiri { font-family: var(--font-amiri), serif; }
 .font-inter { font-family: var(--font-inter), sans-serif; }
 
 /* ================================================================
-   COLOR / TEXT
+   COLOR
    ================================================================ */
 
-/* Gold gradient text — for accent headings */
 .text-gold-gradient {
-  background: linear-gradient(135deg, oklch(90% 0.08 85) 0%, oklch(82% 0.13 80) 40%, oklch(74% 0.10 50) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-/* Rose gold gradient — alt accent */
-.text-rose-gradient {
-  background: linear-gradient(135deg, oklch(80% 0.08 50) 0%, oklch(74% 0.10 50) 50%, oklch(68% 0.12 40) 100%);
+  background: linear-gradient(135deg, oklch(88% 0.08 85) 0%, oklch(80% 0.13 80) 50%, oklch(72% 0.10 75) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -299,158 +247,76 @@
 }
 
 /* ================================================================
-   GLASS — Premium Glassmorphism
+   GLASS — Unified, subtle
    ================================================================ */
 
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  border: 1px solid var(--glass-border);
+  background: oklch(96% 0.005 85 / 0.05);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid oklch(96% 0.005 85 / 0.10);
 }
 
-.glass-strong {
-  background: oklch(95% 0.01 85 / 0.08);
-  backdrop-filter: blur(40px) saturate(160%);
-  -webkit-backdrop-filter: blur(40px) saturate(160%);
-  border: 1px solid oklch(95% 0.01 85 / 0.14);
-}
-
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  border: 1px solid var(--glass-border);
-}
-
-/* Backwards compat */
-.surface-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-}
+.glass-card { background: var(--card); border: 1px solid var(--border); }
+.surface-card { background: var(--card); border: 1px solid var(--border); }
 
 /* ================================================================
-   LAYOUT
+   LAYOUT — Unified Scale
    ================================================================ */
 
-.hairline {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);
-}
+.hairline { height: 1px; background: var(--border); }
 
-.gold-hairline {
+.gold-rule {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--primary) 50%, transparent);
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
-/* Lift card — luxury hover */
+/* Lift — unified hover (4px, 0.6s) */
 .lift-card {
   transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
               box-shadow 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
               border-color 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .lift-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
 }
 
-/* Reveal up — scroll animation */
+/* Reveal — scroll animation */
 .reveal-up {
   opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 1s cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 1s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.reveal-up.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+.reveal-up.is-visible { opacity: 1; transform: translateY(0); }
 
-/* Vertical text */
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
 }
 
 /* ================================================================
-   SHADOWS / GLOWS
+   ANIMATIONS — Minimal, purposeful
    ================================================================ */
 
-.shadow-velvet { box-shadow: var(--shadow-velvet); }
-.shadow-gold { box-shadow: var(--shadow-gold-glow); }
-
-/* ================================================================
-   ANIMATIONS
-   ================================================================ */
-
-/* Marquee */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-.animate-marquee { animation: marquee 50s linear infinite; }
-.animate-marquee-slow { animation: marquee 80s linear infinite; }
+.animate-marquee { animation: marquee 60s linear infinite; }
 
-/* Ken Burns — slow zoom for hero images */
 @keyframes ken-burns {
   0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.15) translate(-1.5%, -1.5%); }
+  100% { transform: scale(1.12) translate(-1.5%, -1.5%); }
 }
 .ken-burns { animation: ken-burns 30s ease-out infinite alternate; }
 
-/* Shimmer — subtle text shimmer */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.shimmer-text {
-  background: linear-gradient(90deg, var(--muted-foreground) 0%, var(--primary) 50%, var(--muted-foreground) 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 8s linear infinite;
-}
-
-/* Slow pulse — for ambient glows */
-@keyframes slow-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
-}
-.animate-slow-pulse { animation: slow-pulse 8s ease-in-out infinite; }
-
-/* Float — for decorative elements */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-.animate-float { animation: float 6s ease-in-out infinite; }
-
-/* Scroll indicator dot */
 @keyframes scroll-dot {
   0% { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(48px); opacity: 0; }
+  100% { transform: translateY(40px); opacity: 0; }
 }
 .animate-scroll-dot { animation: scroll-dot 2.5s ease-in-out infinite; }
 
-/* Hide scrollbar */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* ================================================================
-   NOISE TEXTURE — film grain overlay (subtle)
-   ================================================================ */
-.noise-overlay {
-  position: relative;
-}
-.noise-overlay::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  opacity: 0.025;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-  z-index: 1;
-}
