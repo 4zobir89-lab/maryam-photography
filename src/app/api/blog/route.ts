@@ -94,17 +94,16 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (!body.titleEn || !String(body.titleEn).trim()) {
-      return NextResponse.json(
-        { error: "العنوان بالإنجليزية مطلوب" },
-        { status: 400 }
-      );
-    }
+
+    // titleEn is optional — if not provided, use a transliteration of titleAr
+    const titleEn = body.titleEn && String(body.titleEn).trim()
+      ? String(body.titleEn).trim()
+      : `post-${Date.now()}`;
 
     // Auto-generate slug if not provided
     let slug = body.slug && String(body.slug).trim()
       ? generateSlug(String(body.slug))
-      : generateSlug(String(body.titleEn));
+      : generateSlug(titleEn);
     slug = await ensureUniqueSlug(slug);
 
     // Auto-calculate readTime from contentAr if not provided
@@ -118,7 +117,7 @@ export async function POST(req: NextRequest) {
     const post = await db.blogPost.create({
       data: {
         titleAr: String(body.titleAr).trim(),
-        titleEn: String(body.titleEn).trim(),
+        titleEn,
         slug,
         excerptAr: body.excerptAr || "",
         excerptEn: body.excerptEn || "",

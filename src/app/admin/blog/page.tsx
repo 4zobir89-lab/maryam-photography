@@ -233,10 +233,7 @@ export default function BlogAdminPage() {
       showToast("العنوان بالعربية مطلوب");
       return;
     }
-    if (!editing.titleEn.trim()) {
-      showToast("العنوان بالإنجليزية مطلوب (يُستخدم لتوليد الرابط)");
-      return;
-    }
+    // titleEn is optional — API will auto-generate if empty
     setSaving(true);
     try {
       const isNew = editing.id === 0;
@@ -610,7 +607,7 @@ export default function BlogAdminPage() {
                   </div>
                   <div>
                     <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2 font-inter">
-                      العنوان بالإنجليزية *
+                      العنوان بالإنجليزية <span className="text-muted-foreground/50">(اختياري)</span>
                     </label>
                     <input
                       value={editing.titleEn}
