@@ -10,7 +10,7 @@ import { Footer } from "@/components/sections/Footer";
 
 export default function Home() {
   return (
-    <main className="bg-background">
+    <main className="relative bg-background">
       <Navbar />
       <Hero />
       <About />

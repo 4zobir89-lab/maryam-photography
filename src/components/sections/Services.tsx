@@ -36,36 +36,50 @@ export function Services() {
   if (loading) {
     return (
       <section id="services" className="py-32 md:py-48 bg-background">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
-          <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
+          <div className="w-8 h-8 border border-border border-t-primary rounded-full animate-spin" />
         </div>
       </section>
     );
   }
 
   return (
-    <section id="services" className="py-32 md:py-48 bg-background">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="services" className="relative py-32 md:py-48 bg-background overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60vw] h-[40vh] rounded-full bg-primary/[0.04] blur-[150px] pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8, ease: EASE }}
-          className="mb-12"
+          className="mb-16 max-w-3xl"
         >
-          <span className="eyebrow mb-3 block">Services</span>
-          <h2 className="section-title">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-10 h-px bg-primary/60" />
+            <span className="eyebrow">{t("Services & Packages", "Services & Packages")}</span>
+          </div>
+          <h2 className="section-title mb-8">
             <span className="text-gold-gradient">خدمات</span>{" "}
             <span className="text-foreground">التصوير</span>
           </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            {t(
+              "باقات مصممة بعناية لتناسب كل مناسبة. كل خدمة تأتي بلمسة سينمائية خاصة.",
+              "Thoughtfully crafted packages for every occasion. Each service carries a cinematic signature."
+            )}
+          </p>
         </motion.div>
 
+        {/* Grid — luxury cards */}
         {services.length === 0 ? (
           <div className="text-center py-24 text-muted-foreground">
-            {t("لا توجد خدمات بعد.", "No services yet.")}
+            {t("لا توجد خدمات منشورة بعد.", "No published services yet.")}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {services.map((service, i) => {
               const Icon = iconMap[service.icon] || Camera;
               let featuresList: string[] = [];
@@ -77,78 +91,101 @@ export function Services() {
               return (
                 <motion.div
                   key={service.id ?? i}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: i * 0.08, ease: EASE }}
-                  className={`p-6 md:p-8 lift-card bg-card border ${
-                    service.featured ? "border-primary/30" : "border-border"
+                  transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
+                  className={`relative p-7 rounded-2xl lift-card overflow-hidden ${
+                    service.featured
+                      ? "glass-strong border border-primary/30 shadow-gold"
+                      : "glass border border-[var(--glass-border)]"
                   }`}
                 >
-                  <div className="grid md:grid-cols-12 gap-6 items-center">
-                    {/* Left: icon + title */}
-                    <div className="md:col-span-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-9 h-9 flex items-center justify-center border border-border text-primary">
-                          <Icon className="w-4 h-4" strokeWidth={1.5} />
-                        </div>
-                        {service.featured && (
-                          <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-medium tracking-[0.15em] uppercase">
-                            {t("مميز", "Popular")}
-                          </span>
-                        )}
+                  {/* Accent gradient */}
+                  <div
+                    className="absolute inset-0 opacity-50 pointer-events-none"
+                    style={{
+                      background: `linear-gradient(to bottom, oklch(82% 0.13 80 / 0.08), transparent)`,
+                    }}
+                  />
+
+                  {service.featured && (
+                    <div className="absolute top-5 left-5 px-3 py-1 bg-primary text-primary-foreground text-[9px] font-medium tracking-[0.15em] uppercase rounded-full">
+                      {t("الأكثر طلبًا", "Popular")}
+                    </div>
+                  )}
+
+                  <div className="relative z-10">
+                    {/* Icon */}
+                    <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                    </div>
+
+                    <div className="eyebrow mb-2">{service.titleEn}</div>
+                    <h3 className="font-amiri text-2xl text-foreground mb-3">{service.titleAr}</h3>
+
+                    {service.price && (
+                      <div className="font-display text-2xl text-gold-gradient font-medium mb-1" dir="ltr">
+                        {service.price}
                       </div>
-                      <h3 className="font-amiri text-xl text-foreground mb-1">{service.titleAr}</h3>
-                      <p className="font-display text-xs text-muted-foreground tracking-wider">{service.titleEn}</p>
-                      {service.duration && (
-                        <p className="text-xs text-muted-foreground mt-2">{service.duration}</p>
-                      )}
-                    </div>
+                    )}
+                    {service.duration && (
+                      <div className="text-xs text-muted-foreground mb-5">{service.duration}</div>
+                    )}
 
-                    {/* Middle: features */}
-                    <div className="md:col-span-5">
-                      {featuresList.length > 0 && (
-                        <ul className="grid sm:grid-cols-2 gap-y-1.5 gap-x-4">
-                          {featuresList.map((f, j) => (
-                            <li key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-                              <span>{f}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                    <div className="gold-hairline w-12 mb-5" />
 
-                    {/* Right: price + CTA */}
-                    <div className="md:col-span-3 md:text-left">
-                      {service.price && (
-                        <div className="font-display text-xl text-primary font-medium mb-3" dir="ltr">
-                          {service.price}
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          const el = document.getElementById("contact");
-                          if (el) {
-                            const top = el.getBoundingClientRect().top + window.scrollY - 64;
-                            window.scrollTo({ top, behavior: "smooth" });
-                          }
-                        }}
-                        className={`w-full md:w-auto px-5 py-2.5 text-sm font-medium transition-all duration-300 motion-ease ${
-                          service.featured
-                            ? "bg-primary text-primary-foreground hover:opacity-90"
-                            : "border border-border text-foreground hover:border-primary hover:text-primary"
-                        }`}
-                      >
-                        {t("احجزي", "Book")}
-                      </button>
-                    </div>
+                    {/* Features */}
+                    {featuresList.length > 0 && (
+                      <ul className="space-y-2.5 mb-6">
+                        {featuresList.map((f, j) => (
+                          <li key={j} className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById("contact");
+                        if (el) {
+                          const top = el.getBoundingClientRect().top + window.scrollY - 80;
+                          window.scrollTo({ top, behavior: "smooth" });
+                        }
+                      }}
+                      className={`w-full py-3 rounded-full text-sm font-medium transition-all duration-300 motion-ease ${
+                        service.featured
+                          ? "bg-primary text-primary-foreground hover:opacity-90"
+                          : "border border-border text-foreground hover:border-primary hover:text-primary"
+                      }`}
+                    >
+                      {t("احجزي الآن", "Book Now")}
+                    </button>
                   </div>
                 </motion.div>
               );
             })}
           </div>
         )}
+
+        {/* Bottom note */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3, ease: EASE }}
+          className="text-center mt-14"
+        >
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <span className="text-primary">✦</span>{" "}
+            {t(
+              "جميع الباقات قابلة للتخصيص. للمناسبات الكبرى، تواصلي مباشرة لعرض مخصص.",
+              "All packages are customizable. For large events, contact directly for a custom quote."
+            )}
+          </p>
+        </motion.div>
       </div>
     </section>
   );
