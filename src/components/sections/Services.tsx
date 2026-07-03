@@ -53,9 +53,15 @@ function GoldStar({ className = "" }: { className?: string }) {
   );
 }
 
+type SectionSettings = {
+  servicesTitleAr?: string;
+  servicesSubtitleEn?: string;
+};
+
 export function Services() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sectionSettings, setSectionSettings] = useState<SectionSettings>({});
   const { t } = useLang();
 
   useEffect(() => {
@@ -64,6 +70,15 @@ export function Services() {
       .then((d) => setServices(Array.isArray(d) ? d : []))
       .catch(() => {})
       .finally(() => setLoading(false));
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) =>
+        setSectionSettings({
+          servicesTitleAr: d?.servicesTitleAr,
+          servicesSubtitleEn: d?.servicesSubtitleEn,
+        })
+      )
+      .catch(() => {});
   }, []);
 
   if (loading) {
@@ -87,6 +102,19 @@ export function Services() {
     }
   };
 
+  // Two-tone heading from settings — split at last space so the last word gets gold gradient.
+  const titleRaw = (sectionSettings.servicesTitleAr || "خدمات التصوير").trim();
+  const titleWords = titleRaw.split(/\s+/);
+  const titleMain =
+    titleWords.length > 1 ? titleWords.slice(0, -1).join(" ") : "";
+  const titleAccent =
+    titleWords.length > 1
+      ? titleWords[titleWords.length - 1]
+      : titleWords[0] || "";
+  const subtitle =
+    sectionSettings.servicesSubtitleEn ||
+    t("Services & Packages", "Services & Packages");
+
   return (
     <section
       id="services"
@@ -109,9 +137,7 @@ export function Services() {
           className="flex items-center gap-4 mb-6"
         >
           <span className="w-12 h-px bg-primary/40" />
-          <span className="eyebrow">
-            {t("Services & Packages", "Services & Packages")}
-          </span>
+          <span className="eyebrow">{subtitle}</span>
         </motion.div>
 
         {/* Title + body */}
@@ -123,8 +149,10 @@ export function Services() {
           className="mb-14 max-w-2xl"
         >
           <h2 className="section-title mb-5">
-            <span className="text-foreground">خدمات</span>{" "}
-            <span className="text-gold-gradient">التصوير</span>
+            {titleMain && (
+              <span className="text-foreground">{titleMain} </span>
+            )}
+            <span className="text-gold-gradient">{titleAccent}</span>
           </h2>
           <p className="body-lg">
             {t(

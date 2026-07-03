@@ -66,6 +66,17 @@ export function About() {
     .map((tag) => tag.trim())
     .filter(Boolean);
 
+  // Two-tone heading: split the title at the last space so the last word
+  // gets the gold-gradient treatment (matches the original design pattern).
+  const titleRaw = (s.aboutTitleAr || "").trim();
+  const titleWords = titleRaw.split(/\s+/);
+  const titleMain =
+    titleWords.length > 1 ? titleWords.slice(0, -1).join(" ") : "";
+  const titleAccent =
+    titleWords.length > 1
+      ? titleWords[titleWords.length - 1]
+      : titleWords[0] || "";
+
   // x-offset direction depends on lang so columns slide in from their visual edge
   const portraitX = lang === "ar" ? 40 : -40;
   const textX = lang === "ar" ? -40 : 40;
@@ -92,7 +103,7 @@ export function About() {
           className="flex items-center gap-4 mb-14"
         >
           <span className="w-12 h-px bg-primary/40" />
-          <span className="eyebrow">{t("الفنانة", "The Artist")}</span>
+          <span className="eyebrow">{s.aboutSubtitleEn || t("الفنانة", "The Artist")}</span>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -154,12 +165,22 @@ export function About() {
           >
             {/* Display heading with text-gradient second line */}
             <h2 className="display-heading text-[clamp(2.2rem,5vw,3.75rem)]">
-              <span className="block text-foreground">
-                {t("خلف كل إطار", "Behind Every Frame,")}
-              </span>
-              <span className="block text-gradient">
-                {t("حكاية تُروى", "A Story Unfolds")}
-              </span>
+              {titleMain && (
+                <span className="block text-foreground">{titleMain}</span>
+              )}
+              {titleAccent && (
+                <span className="block text-gradient">{titleAccent}</span>
+              )}
+              {!titleRaw && (
+                <>
+                  <span className="block text-foreground">
+                    {t("خلف كل إطار", "Behind Every Frame,")}
+                  </span>
+                  <span className="block text-gradient">
+                    {t("حكاية تُروى", "A Story Unfolds")}
+                  </span>
+                </>
+              )}
             </h2>
 
             {/* Two body paragraphs */}

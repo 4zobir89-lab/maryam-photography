@@ -32,6 +32,11 @@ const categories = [
 
 const EASE = [0.25, 0.46, 0.45, 0.94] as const;
 
+type SectionSettings = {
+  portfolioTitleAr?: string;
+  portfolioSubtitleEn?: string;
+};
+
 export function Portfolio() {
   const [active, setActive] = useState("all");
   const [selected, setSelected] = useState<Project | null>(null);
@@ -39,6 +44,7 @@ export function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [sectionSettings, setSectionSettings] = useState<SectionSettings>({});
   const { t } = useLang();
 
   const openProject = useCallback(async (project: Project) => {
@@ -92,6 +98,15 @@ export function Portfolio() {
       .then((d) => setProjects(Array.isArray(d) ? d : []))
       .catch(() => {})
       .finally(() => setLoading(false));
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) =>
+        setSectionSettings({
+          portfolioTitleAr: d?.portfolioTitleAr,
+          portfolioSubtitleEn: d?.portfolioSubtitleEn,
+        })
+      )
+      .catch(() => {});
   }, []);
 
   if (loading) {
@@ -114,6 +129,18 @@ export function Portfolio() {
     return c ? t(c.labelAr, c.labelEn) : cat;
   };
 
+  // Two-tone heading from settings — split at last space so the last word gets gold gradient.
+  const titleRaw = (sectionSettings.portfolioTitleAr || "معرض الأعمال").trim();
+  const titleWords = titleRaw.split(/\s+/);
+  const titleMain =
+    titleWords.length > 1 ? titleWords.slice(0, -1).join(" ") : "";
+  const titleAccent =
+    titleWords.length > 1
+      ? titleWords[titleWords.length - 1]
+      : titleWords[0] || "";
+  const subtitle =
+    sectionSettings.portfolioSubtitleEn || t("Selected Works", "Selected Works");
+
   return (
     <section
       id="portfolio"
@@ -133,7 +160,7 @@ export function Portfolio() {
           className="mb-4 flex items-center gap-4"
         >
           <span className="w-12 h-px bg-primary/40" />
-          <span className="eyebrow">{t("Selected Works", "Selected Works")}</span>
+          <span className="eyebrow">{subtitle}</span>
         </motion.div>
 
         {/* Section title */}
@@ -144,8 +171,10 @@ export function Portfolio() {
           transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
           className="section-title mb-12"
         >
-          <span className="text-foreground">معرض</span>{" "}
-          <span className="text-gold-gradient">الأعمال</span>
+          {titleMain && (
+            <span className="text-foreground">{titleMain} </span>
+          )}
+          <span className="text-gold-gradient">{titleAccent}</span>
         </motion.h2>
 
         {/* Filter pills */}

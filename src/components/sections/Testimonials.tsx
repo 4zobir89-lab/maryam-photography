@@ -43,6 +43,11 @@ type Stat = {
   icon: LucideIcon;
 };
 
+type SectionSettings = {
+  testimonialsTitleAr?: string;
+  testimonialsSubtitleEn?: string;
+};
+
 export function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -50,6 +55,7 @@ export function Testimonials() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [viewImage, setViewImage] = useState<string | null>(null);
+  const [sectionSettings, setSectionSettings] = useState<SectionSettings>({});
   const pausedRef = useRef(false);
   const { t } = useLang();
 
@@ -57,10 +63,15 @@ export function Testimonials() {
     Promise.all([
       fetch("/api/testimonials").then((r) => r.json()),
       fetch("/api/projects").then((r) => r.json()),
+      fetch("/api/settings").then((r) => r.json()),
     ])
-      .then(([tstData, prjData]) => {
+      .then(([tstData, prjData, settingsData]) => {
         setTestimonials(Array.isArray(tstData) ? tstData : []);
         setProjects(Array.isArray(prjData) ? prjData : []);
+        setSectionSettings({
+          testimonialsTitleAr: settingsData?.testimonialsTitleAr,
+          testimonialsSubtitleEn: settingsData?.testimonialsSubtitleEn,
+        });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -156,6 +167,19 @@ export function Testimonials() {
     },
   ];
 
+  // Two-tone heading from settings — split at last space so the last word gets gold gradient.
+  const titleRaw = (sectionSettings.testimonialsTitleAr || "آراء العملاء").trim();
+  const titleWords = titleRaw.split(/\s+/);
+  const titleMain =
+    titleWords.length > 1 ? titleWords.slice(0, -1).join(" ") : "";
+  const titleAccent =
+    titleWords.length > 1
+      ? titleWords[titleWords.length - 1]
+      : titleWords[0] || "";
+  const subtitle =
+    sectionSettings.testimonialsSubtitleEn ||
+    t("Client Voices", "Client Voices");
+
   const slideVariants = {
     enter: (dir: number) => ({
       opacity: 0,
@@ -190,9 +214,7 @@ export function Testimonials() {
           className="flex items-center justify-center gap-4 mb-5"
         >
           <span className="w-12 h-px bg-primary/40" />
-          <span className="eyebrow">
-            {t("Client Voices", "Client Voices")}
-          </span>
+          <span className="eyebrow">{subtitle}</span>
           <span className="w-12 h-px bg-primary/40" />
         </motion.div>
 
@@ -204,8 +226,10 @@ export function Testimonials() {
           transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
           className="section-title text-center mb-14"
         >
-          <span className="text-foreground">آراء</span>{" "}
-          <span className="text-gold-gradient">العملاء</span>
+          {titleMain && (
+            <span className="text-foreground">{titleMain} </span>
+          )}
+          <span className="text-gold-gradient">{titleAccent}</span>
         </motion.h2>
 
         {/* Carousel */}

@@ -238,13 +238,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center sm:text-right">
-            <span className="text-xs text-muted-foreground">{copyright}</span>
-            <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-primary/40" />
-            <span className="font-inter text-[10px] tracking-[0.25em] uppercase text-muted-foreground">
-              {t("صُنع في صنعاء", "Crafted in Sana'a")}
-            </span>
-          </div>
+          <span className="text-xs text-muted-foreground">{copyright}</span>
 
           <div className="flex items-center gap-5">
             {/* Developer signature */}

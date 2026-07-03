@@ -125,6 +125,16 @@ export function Contact() {
     { id: "other", label: t("أخرى", "Other") },
   ];
 
+  // Two-tone heading from settings — split at last space so the last word gets gold gradient.
+  const titleRaw = (s.contactTitleAr || "لنبدأ حكايتك").trim();
+  const titleWords = titleRaw.split(/\s+/);
+  const titleMain =
+    titleWords.length > 1 ? titleWords.slice(0, -1).join(" ") : "";
+  const titleAccent =
+    titleWords.length > 1
+      ? titleWords[titleWords.length - 1]
+      : titleWords[0] || "";
+
   return (
     <section
       id="contact"
@@ -158,8 +168,10 @@ export function Contact() {
           className="mb-14 max-w-2xl"
         >
           <h2 className="section-title mb-5">
-            <span className="text-foreground">لنبدأ</span>{" "}
-            <span className="text-gold-gradient">حكايتك</span>
+            {titleMain && (
+              <span className="text-foreground">{titleMain} </span>
+            )}
+            <span className="text-gold-gradient">{titleAccent}</span>
           </h2>
           <p className="body-lg">
             {t(

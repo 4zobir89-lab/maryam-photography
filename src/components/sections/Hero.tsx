@@ -13,6 +13,12 @@ type Settings = {
   heroCta1Ar: string;
   heroCta2Ar: string;
   heroImageData: string;
+  heroStat1Num: string;
+  heroStat1Label: string;
+  heroStat2Num: string;
+  heroStat2Label: string;
+  heroStat3Num: string;
+  heroStat3Label: string;
 };
 
 const EASE = [0.25, 0.46, 0.45, 0.94] as const;
@@ -45,6 +51,14 @@ export function Hero() {
       window.scrollTo({ top, behavior: "smooth" });
     }
   };
+
+  // Stats from settings (only render if at least one has a value)
+  const stats = [
+    { num: s.heroStat1Num, label: s.heroStat1Label },
+    { num: s.heroStat2Num, label: s.heroStat2Label },
+    { num: s.heroStat3Num, label: s.heroStat3Label },
+  ].filter((x) => x.num || x.label);
+  const hasStats = stats.length > 0;
 
   return (
     <section id="home" className="relative h-screen min-h-[700px] overflow-hidden">
@@ -154,6 +168,40 @@ export function Hero() {
           <ArrowDown size={16} className="text-white/30" strokeWidth={1.5} />
         </motion.div>
       </motion.div>
+
+      {/* Hero stats — pulled from settings (heroStat1-3) */}
+      {hasStats && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2.3, duration: 1, ease: EASE }}
+          className="absolute bottom-24 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6"
+        >
+          <div className="flex items-center justify-center gap-8 md:gap-14">
+            {stats.map((stat, i) => (
+              <div
+                key={i}
+                className="text-center flex items-center gap-8 md:gap-14"
+              >
+                {i > 0 && (
+                  <span className="w-px h-8 bg-white/15 hidden sm:block" />
+                )}
+                <div>
+                  <div
+                    className="font-display text-2xl md:text-3xl text-white leading-none"
+                    dir="ltr"
+                  >
+                    {stat.num}
+                  </div>
+                  <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/55 mt-1.5">
+                    {stat.label}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Side decorative — Est. year */}
       <motion.div
