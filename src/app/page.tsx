@@ -7,15 +7,10 @@ import { Services } from "@/components/sections/Services";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Contact } from "@/components/sections/Contact";
 import { Footer } from "@/components/sections/Footer";
-import { CursorGlow } from "@/components/shared/CursorGlow";
-import { ScrollProgress } from "@/components/shared/ScrollProgress";
-import { BackToTop } from "@/components/shared/BackToTop";
 
 export default function Home() {
   return (
     <main className="relative min-h-screen flex flex-col bg-background">
-      <ScrollProgress />
-      <CursorGlow />
       <Navbar />
       <Hero />
       <About />
@@ -25,7 +20,6 @@ export default function Home() {
       <Testimonials />
       <Contact />
       <Footer />
-      <BackToTop />
     </main>
   );
 }

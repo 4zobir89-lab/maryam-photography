@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { useLang } from "@/components/shared/LanguageProvider";
 
 type Settings = {
   taglineEn: string;
-  taglineAr?: string;
   heroTitleAr: string;
   heroSubtitleEn: string;
   heroDescAr: string;
@@ -19,136 +18,15 @@ type Settings = {
   heroStat2Label: string;
   heroStat3Num: string;
   heroStat3Label: string;
-  heroImageData?: string;
+  heroImageData: string;
 };
 
-const EASE = [0.2, 0.8, 0.2, 1] as const;
-
-/** Refined aperture/lens diagram in gold hairlines on the warm-dark surface.
- *  NOT a silhouette — a technical, editorial visual. */
-function ApertureDiagram() {
-  const cx = 150;
-  const cy = 200;
-  const outerR = 132;
-  const midR = 88;
-  const innerR = 38;
-
-  const tickCount = 36;
-  const ticks = Array.from({ length: tickCount }, (_, i) => {
-    const a = (i / tickCount) * Math.PI * 2 - Math.PI / 2;
-    const major = i % 6 === 0;
-    const r1 = major ? 118 : 124;
-    const r2 = major ? 138 : 132;
-    return {
-      x1: cx + r1 * Math.cos(a),
-      y1: cy + r1 * Math.sin(a),
-      x2: cx + r2 * Math.cos(a),
-      y2: cy + r2 * Math.sin(a),
-      major,
-    };
-  });
-
-  // 6-blade aperture polygon (offset vertices inside)
-  const bladeOuter = Array.from({ length: 6 }, (_, i) => {
-    const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
-    return [cx + midR * Math.cos(a), cy + midR * Math.sin(a)];
-  });
-  const bladeInner = Array.from({ length: 6 }, (_, i) => {
-    const a = ((i + 0.5) / 6) * Math.PI * 2 - Math.PI / 2;
-    return [cx + innerR * Math.cos(a), cy + innerR * Math.sin(a)];
-  });
-  const bladePath =
-    bladeOuter
-      .map(([x, y], i) => {
-        const [ix, iy] = bladeInner[i];
-        return `M ${x} ${y} L ${ix} ${iy}`;
-      })
-      .join(" ") +
-    " " +
-    bladeOuter
-      .map(([x, y], i) => {
-        const [nx, ny] = bladeOuter[(i + 1) % 6];
-        return `M ${x} ${y} L ${nx} ${ny}`;
-      })
-      .join(" ");
-
-  return (
-    <svg
-      viewBox="0 0 300 400"
-      className="w-full h-full text-primary"
-      aria-hidden
-    >
-      <g stroke="currentColor" fill="none" strokeLinecap="round">
-        {/* Outer ring */}
-        <circle cx={cx} cy={cy} r={outerR} strokeWidth="0.5" opacity="0.55" />
-        {/* Mid ring */}
-        <circle cx={cx} cy={cy} r={midR} strokeWidth="0.5" opacity="0.35" />
-        {/* Tick marks */}
-        {ticks.map((t, i) => (
-          <line
-            key={i}
-            x1={t.x1}
-            y1={t.y1}
-            x2={t.x2}
-            y2={t.y2}
-            strokeWidth={t.major ? 1 : 0.5}
-            opacity={t.major ? 0.85 : 0.45}
-          />
-        ))}
-        {/* Aperture blades */}
-        <path d={bladePath} strokeWidth="0.7" opacity="0.7" />
-        {/* Center crosshair */}
-        <line
-          x1={cx}
-          y1={cy - 6}
-          x2={cx}
-          y2={cy + 6}
-          strokeWidth="0.5"
-          opacity="0.7"
-        />
-        <line
-          x1={cx - 6}
-          y1={cy}
-          x2={cx + 6}
-          y2={cy}
-          strokeWidth="0.5"
-          opacity="0.7"
-        />
-        <circle cx={cx} cy={cy} r="1.5" fill="currentColor" stroke="none" />
-      </g>
-      {/* Focal-length caption */}
-      <text
-        x={cx}
-        y={cy + outerR + 22}
-        textAnchor="middle"
-        className="font-inter"
-        fontSize="6"
-        letterSpacing="3"
-        fill="currentColor"
-        opacity="0.7"
-      >
-        ƒ/1.4 · 50 mm
-      </text>
-      <text
-        x={cx}
-        y={cy - outerR - 12}
-        textAnchor="middle"
-        className="font-inter"
-        fontSize="5"
-        letterSpacing="4"
-        fill="currentColor"
-        opacity="0.5"
-      >
-        MARYAM · LENS
-      </text>
-    </svg>
-  );
-}
+const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 export function Hero() {
   const [s, setS] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
-  const { lang, t } = useLang();
+  const { lang } = useLang();
 
   useEffect(() => {
     fetch("/api/settings")
@@ -160,21 +38,11 @@ export function Hero() {
 
   if (loading || !s) {
     return (
-      <section
-        id="home"
-        className="relative min-h-screen flex items-center justify-center bg-background"
-      >
-        <div className="w-7 h-7 border border-primary/30 border-t-primary rounded-full animate-spin" />
+      <section className="relative min-h-screen flex items-center justify-center bg-background">
+        <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
       </section>
     );
   }
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 64;
-    window.scrollTo({ top, behavior: "smooth" });
-  };
 
   const stats = [
     { num: s.heroStat1Num, label: s.heroStat1Label },
@@ -182,157 +50,241 @@ export function Hero() {
     { num: s.heroStat3Num, label: s.heroStat3Label },
   ];
 
-  // Staggered entrance delays — eyebrow → name → subtitle → desc → CTAs → stats
-  const fade = (delay: number) => ({
-    initial: { opacity: 0, y: 18 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.8, delay, ease: EASE },
-  });
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
 
   return (
     <section
       id="home"
-      dir="ltr" /* Force LTR grid so text sits on visual left, image on right */
-      className="relative min-h-screen flex items-center bg-background overflow-hidden"
+      className="relative min-h-screen flex items-center bg-background overflow-hidden pt-16"
     >
-      <div className="container mx-auto max-w-7xl px-6 w-full">
-        <div className="grid lg:grid-cols-[3fr_2fr] gap-12 lg:gap-16 items-center pt-32 pb-24 lg:py-0 lg:min-h-screen">
-          {/* === LEFT: text column (60%) === */}
-          <div dir="rtl" className="flex flex-col gap-7 lg:gap-8">
-            {/* 1. Eyebrow with short gold hairline */}
+      {/* Subtle ambient gradient — barely visible, warm */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 right-0 w-[50vw] h-[50vw] rounded-full bg-primary/[0.04] blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 py-20 md:py-24">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          {/* ===== Text column ===== */}
+          <div className="lg:col-span-7 order-2 lg:order-1">
+            {/* Eyebrow */}
             <motion.div
-              {...fade(0.1)}
-              className="flex items-center gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE }}
+              className="flex items-center gap-3 mb-8"
             >
-              <span className="h-px w-8 bg-primary/70" aria-hidden />
+              <span className="w-8 h-px bg-primary/60" />
               <span className="eyebrow">{s.taglineEn}</span>
             </motion.div>
 
-            {/* 2. Massive Arabic name — foreground color, single gold dot accent */}
+            {/* Arabic name — massive */}
             <motion.h1
-              {...fade(0.2)}
-              className="font-amiri font-bold text-foreground leading-[0.9] tracking-tight"
-              style={{ fontSize: "clamp(5rem, 12vw, 11rem)" }}
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.15, ease: EASE }}
+              className="font-amiri font-bold leading-[0.92] mb-6"
+              style={{ fontSize: "clamp(4.5rem, 13vw, 11rem)" }}
             >
-              <span className="inline-flex items-baseline gap-4">
-                {lang === "en" ? s.heroSubtitleEn : s.heroTitleAr}
-                <span
-                  aria-hidden
-                  className="inline-block w-2.5 h-2.5 rounded-full bg-primary translate-y-[-0.55em]"
-                />
-              </span>
+              <span className="text-foreground">{s.heroTitleAr}</span>
             </motion.h1>
 
-            {/* 3. English subtitle — Playfair, wide tracking, muted */}
+            {/* English subtitle */}
             <motion.div
-              {...fade(0.3)}
-              className="font-display text-muted-foreground uppercase"
-              style={{ fontSize: "clamp(0.9rem, 1.4vw, 1.15rem)", letterSpacing: "0.45em" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.4, ease: EASE }}
+              className="font-display tracking-[0.25em] text-muted-foreground uppercase mb-8"
+              style={{ fontSize: "clamp(1rem, 2vw, 1.5rem)" }}
             >
-              {lang === "en" ? s.heroTitleAr : s.heroSubtitleEn}
+              {s.heroSubtitleEn}
             </motion.div>
 
-            {/* 4. Description — body-lg, muted, max-w-xl */}
+            {/* Description */}
             <motion.p
-              {...fade(0.4)}
-              className="body-lg max-w-xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.55, ease: EASE }}
+              className="body-lg max-w-xl mb-10"
             >
               {s.heroDescAr}
             </motion.p>
 
-            {/* 5. CTA row — solid gold + outline neutral */}
+            {/* CTAs */}
             <motion.div
-              {...fade(0.5)}
-              className="flex flex-wrap items-center gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.7, ease: EASE }}
+              className="flex flex-wrap items-center gap-3 mb-14"
             >
               <button
                 onClick={() => scrollTo("portfolio")}
-                className="group inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-pale transition-colors duration-300 motion-ease rounded-md"
+                className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-primary text-primary-foreground text-sm font-medium tracking-wide hover:opacity-90 transition-all duration-300 motion-ease"
               >
-                {t(s.heroCta1Ar, "Explore Work")}
-                <ArrowDown className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-0.5 motion-ease" />
+                {s.heroCta1Ar}
+                <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" strokeWidth={1.5} />
               </button>
               <button
                 onClick={() => scrollTo("about")}
-                className="inline-flex items-center gap-2 px-6 py-3 border border-border text-foreground text-sm font-medium hover:border-border-strong hover:text-primary transition-colors duration-300 motion-ease rounded-md"
+                className="inline-flex items-center px-7 py-3.5 border border-border text-foreground text-sm font-medium tracking-wide hover:border-primary hover:text-primary transition-all duration-300 motion-ease"
               >
-                {t(s.heroCta2Ar, "Maryam's Story")}
+                {s.heroCta2Ar}
               </button>
             </motion.div>
 
-            {/* 6. Stats row — inline, NOT cards, separated by thin gold dividers */}
+            {/* Stats — inline, separated by hairlines */}
             <motion.div
-              {...fade(0.6)}
-              className="flex items-center gap-6 pt-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.85, ease: EASE }}
+              className="flex items-center gap-6 sm:gap-10"
             >
               {stats.map((stat, i) => (
-                <div key={i} className="flex items-center gap-6">
-                  {i > 0 && (
-                    <span aria-hidden className="w-px h-10 bg-primary/25" />
-                  )}
-                  <div className="flex flex-col gap-1">
-                    <span className="font-display text-2xl text-primary leading-none">
+                <div key={i} className="flex items-center gap-6 sm:gap-10">
+                  {i > 0 && <span className="w-px h-10 bg-border" />}
+                  <div>
+                    <div className="font-display text-2xl sm:text-3xl text-primary font-medium mb-1" dir="ltr">
                       {stat.num}
-                    </span>
-                    <span className="text-xs text-muted-foreground tracking-wide">
+                    </div>
+                    <div className="text-[11px] text-muted-foreground tracking-wide">
                       {stat.label}
-                    </span>
+                    </div>
                   </div>
                 </div>
               ))}
             </motion.div>
           </div>
 
-          {/* === RIGHT: portrait column (40%) === */}
+          {/* ===== Visual column ===== */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.35, ease: EASE }}
-            className="relative mx-auto w-full max-w-md"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.3, ease: EASE }}
+            className="lg:col-span-5 order-1 lg:order-2"
           >
-            <div className="relative aspect-[3/4] w-full border border-border-strong/40 overflow-hidden bg-card">
-              {s.heroImageData ? (
-                <img
-                  src={s.heroImageData}
-                  alt={t("مريم — مصورة فوتوغرافية", "Maryam — Photographer")}
-                  loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center p-8">
-                  <ApertureDiagram />
-                </div>
-              )}
-            </div>
+            <div className="relative aspect-[3/4] max-w-sm mx-auto">
+              {/* Gold frame offset */}
+              <div className="absolute -inset-2 border border-primary/20 pointer-events-none" />
 
-            {/* Floating "EST · 2018" vertical label on the side */}
-            <span
-              aria-hidden
-              className="vertical-text font-inter text-[10px] tracking-[0.5em] text-muted-foreground uppercase absolute -end-6 top-1/2 -translate-y-1/2 hidden sm:block"
-            >
-              EST · 2018
-            </span>
+              {/* Image container */}
+              <div className="relative w-full h-full overflow-hidden bg-card">
+                {s.heroImageData ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.heroImageData}
+                    alt="مريم"
+                    className="w-full h-full object-cover ken-burns"
+                  />
+                ) : (
+                  <ApertureSvg />
+                )}
+
+                {/* Subtle bottom gradient for depth */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent pointer-events-none" />
+              </div>
+
+              {/* Side label */}
+              <div className="hidden md:flex absolute -left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-3">
+                <span className="vertical-text font-inter text-[9px] tracking-[0.4em] text-muted-foreground uppercase">
+                  Est · 2018
+                </span>
+                <span className="w-px h-12 bg-border" />
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Scroll indicator — thin line + downward dot, "SCROLL" eyebrow */}
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 0.8, ease: EASE }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20"
-        dir="ltr"
+        transition={{ delay: 1.4, duration: 1, ease: EASE }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="eyebrow text-[0.6rem]">Scroll</span>
-        <div className="relative w-px h-12 bg-border overflow-hidden">
-          <motion.span
-            animate={{ y: [0, 44], opacity: [0, 1, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: EASE }}
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+        <span className="font-inter text-[9px] tracking-[0.3em] text-muted-foreground uppercase">
+          Scroll
+        </span>
+        <div className="w-px h-10 bg-gradient-to-b from-border to-transparent relative overflow-hidden">
+          <motion.div
+            animate={{ y: ["-100%", "200%"] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-x-0 top-0 h-4 bg-primary/60"
           />
         </div>
       </motion.div>
     </section>
+  );
+}
+
+/* Aperture SVG — refined, technical, NOT a silhouette */
+function ApertureSvg() {
+  return (
+    <svg
+      viewBox="0 0 300 400"
+      className="w-full h-full"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <defs>
+        <radialGradient id="heroBg" cx="50%" cy="45%" r="70%">
+          <stop offset="0%" stopColor="oklch(20% 0.005 285)" />
+          <stop offset="100%" stopColor="oklch(11% 0.004 285)" />
+        </radialGradient>
+      </defs>
+      <rect width="300" height="400" fill="url(#heroBg)" />
+
+      {/* Concentric rings */}
+      <circle cx="150" cy="180" r="110" fill="none" stroke="oklch(80% 0.13 82)" strokeWidth="0.6" opacity="0.5" />
+      <circle cx="150" cy="180" r="80" fill="none" stroke="oklch(80% 0.13 82)" strokeWidth="0.4" opacity="0.35" />
+      <circle cx="150" cy="180" r="50" fill="none" stroke="oklch(80% 0.13 82)" strokeWidth="0.4" opacity="0.25" />
+
+      {/* Aperture blades (6-blade) */}
+      <g stroke="oklch(80% 0.13 82)" strokeWidth="0.8" fill="none" opacity="0.7">
+        {Array.from({ length: 6 }).map((_, i) => {
+          const angle = (i * 60 * Math.PI) / 180;
+          const x1 = 150 + Math.cos(angle) * 35;
+          const y1 = 180 + Math.sin(angle) * 35;
+          const x2 = 150 + Math.cos(angle + 0.7) * 95;
+          const y2 = 180 + Math.sin(angle + 0.7) * 95;
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />;
+        })}
+      </g>
+
+      {/* Tick marks around outer ring */}
+      <g stroke="oklch(80% 0.13 82)" strokeWidth="0.5" opacity="0.4">
+        {Array.from({ length: 36 }).map((_, i) => {
+          const angle = (i * 10 * Math.PI) / 180;
+          const isMajor = i % 9 === 0;
+          const r1 = 110;
+          const r2 = isMajor ? 120 : 115;
+          const x1 = 150 + Math.cos(angle) * r1;
+          const y1 = 180 + Math.sin(angle) * r1;
+          const x2 = 150 + Math.cos(angle) * r2;
+          const y2 = 180 + Math.sin(angle) * r2;
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />;
+        })}
+      </g>
+
+      {/* Center dot */}
+      <circle cx="150" cy="180" r="2" fill="oklch(80% 0.13 82)" opacity="0.8" />
+
+      {/* Caption */}
+      <text
+        x="150"
+        y="350"
+        textAnchor="middle"
+        fill="oklch(64% 0.004 90)"
+        fontSize="9"
+        letterSpacing="3"
+        style={{ fontFamily: "var(--font-inter)" }}
+      >
+        ƒ/1.4 · 50mm
+      </text>
+    </svg>
   );
 }

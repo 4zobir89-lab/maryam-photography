@@ -3,12 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Heart,
-  Camera,
-  Building2,
-  Sparkles,
-  Check,
-  LucideIcon,
+  Heart, Camera, Building2, Sparkles, Check, LucideIcon,
 } from "lucide-react";
 import { useLang } from "@/components/shared/LanguageProvider";
 
@@ -19,7 +14,7 @@ type Service = {
   description: string;
   price: string;
   duration: string;
-  features: string; // JSON string array
+  features: string;
   icon: string;
   accentFrom: string;
   featured: boolean;
@@ -28,26 +23,10 @@ type Service = {
 };
 
 const iconMap: Record<string, LucideIcon> = {
-  Heart,
-  Camera,
-  Building2,
-  Sparkles,
+  Heart, Camera, Building2, Sparkles,
 };
 
-const EASE = [0.2, 0.8, 0.2, 1] as const;
-
-function LoadingSkeleton() {
-  return (
-    <section
-      id="services"
-      className="relative py-28 md:py-40 bg-background overflow-hidden"
-    >
-      <div className="container mx-auto max-w-7xl px-6 flex items-center justify-center min-h-[40vh]">
-        <div className="w-7 h-7 border border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    </section>
-  );
-}
+const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 export function Services() {
   const [services, setServices] = useState<Service[]>([]);
@@ -62,145 +41,120 @@ export function Services() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <LoadingSkeleton />;
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 64;
-    window.scrollTo({ top, behavior: "smooth" });
-  };
-
-  const fade = (delay: number) => ({
-    initial: { opacity: 0, y: 24 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-60px" },
-    transition: { duration: 0.8, delay, ease: EASE },
-  });
+  if (loading) {
+    return (
+      <section id="services" className="py-28 md:py-40 bg-background">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-center min-h-[40vh]">
+          <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section
-      id="services"
-      dir="rtl"
-      className="relative py-28 md:py-40 bg-background overflow-hidden"
-    >
-      <div className="relative z-10 container mx-auto max-w-7xl px-6">
-        {/* === Editorial split header (left-aligned) === */}
+    <section id="services" className="py-28 md:py-40 bg-background">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8">
+        {/* Header */}
         <motion.div
-          {...fade(0)}
-          className="flex flex-col gap-4 mb-16 md:mb-24 max-w-3xl"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.8, ease: EASE }}
+          className="mb-16 max-w-3xl"
         >
-          <div className="flex items-center gap-3">
-            <span className="h-px w-8 bg-primary/70" aria-hidden />
-            <span className="eyebrow">
-              {t("الخدمات والباقات", "Services & Packages")}
-            </span>
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-8 h-px bg-primary/60" />
+            <span className="eyebrow">{t("Services & Packages", "Services & Packages")}</span>
           </div>
-          <h2 className="section-title text-foreground">
-            {t("خدمات التصوير", "Photography Services")}
+          <h2 className="section-title mb-8">
+            <span className="text-gold-gradient">خدمات</span>{" "}
+            <span className="text-foreground">التصوير</span>
           </h2>
-          <p className="body-lg max-w-2xl pt-2">
+          <p className="body-lg">
             {t(
-              "باقات مصممة بعناية لتناسب كل مناسبة. كل خدمة تأتي بلمسة سينمائية خاصة، واهتمام بأدق التفاصيل من اللقطة الأولى حتى التسليم النهائي.",
-              "Carefully crafted packages for every occasion. Each service carries its own cinematic signature, with attention to the finest detail — from first frame to final delivery."
+              "باقات مصممة بعناية لتناسب كل مناسبة. كل خدمة تأتي بلمسة سينمائية خاصة، واهتمام بأدق التفاصيل.",
+              "Thoughtfully crafted packages for every occasion. Each service carries a cinematic signature, with attention to the finest details."
             )}
           </p>
-          <div className="hairline w-24 mt-2" />
         </motion.div>
 
-        {/* Services grid */}
+        {/* Grid */}
         {services.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">
-            {t("لا توجد خدمات منشورة بعد.", "No services published yet.")}
+          <div className="text-center py-24 text-muted-foreground">
+            {t("لا توجد خدمات منشورة بعد.", "No published services yet.")}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {services.map((service, i) => {
               const Icon = iconMap[service.icon] || Camera;
               let featuresList: string[] = [];
               try {
                 const parsed = JSON.parse(service.features || "[]");
-                if (Array.isArray(parsed))
-                  featuresList = parsed.filter(
-                    (x) => typeof x === "string"
-                  ) as string[];
-              } catch {
-                featuresList = [];
-              }
-
-              const featured = !!service.featured;
+                if (Array.isArray(parsed)) featuresList = parsed.filter((x) => typeof x === "string") as string[];
+              } catch { featuresList = []; }
 
               return (
                 <motion.div
                   key={service.id ?? i}
-                  {...fade(i * 0.08)}
-                  className={`surface-card relative group p-6 flex flex-col transition-all duration-500 motion-ease hover:-translate-y-1 hover:border-border-strong ${
-                    featured ? "border-border-strong/50" : ""
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: i * 0.08, ease: EASE }}
+                  className={`relative p-6 lg:p-7 lift-card bg-card border ${
+                    service.featured ? "border-primary/40" : "border-border"
                   }`}
                 >
-                  {/* Featured badge — small pill, top-right, gold bg */}
-                  {featured && (
-                    <div className="absolute top-4 left-4 px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-medium tracking-wider rounded-full">
-                      {t("الأكثر طلبًا", "Most Booked")}
+                  {service.featured && (
+                    <div className="absolute top-0 left-0 px-2.5 py-1 bg-primary text-primary-foreground text-[9px] font-medium tracking-[0.15em] uppercase">
+                      {t("الأكثر طلبًا", "Popular")}
                     </div>
                   )}
 
-                  {/* Icon — small square (w-10 h-10), border hairline, NOT circle */}
-                  <div className="w-10 h-10 border border-border flex items-center justify-center mb-5">
-                    <Icon
-                      className="w-5 h-5 text-primary"
-                      strokeWidth={1.5}
-                    />
+                  {/* Icon — small square, NOT circle */}
+                  <div className="w-10 h-10 flex items-center justify-center border border-border text-primary mb-5 mt-4">
+                    <Icon className="w-5 h-5" strokeWidth={1.5} />
                   </div>
 
-                  <div className="eyebrow mb-1.5">{service.titleEn}</div>
-                  <h3 className="font-amiri text-xl text-foreground mb-4 leading-snug">
-                    {service.titleAr}
-                  </h3>
+                  <div className="eyebrow mb-2">{service.titleEn}</div>
+                  <h3 className="font-amiri text-xl text-foreground mb-3">{service.titleAr}</h3>
 
-                  {/* Price — font-display, gold (NOT gradient) */}
                   {service.price && (
-                    <div className="font-display text-lg text-primary font-semibold leading-none">
+                    <div className="font-display text-lg text-primary font-medium mb-1" dir="ltr">
                       {service.price}
                     </div>
                   )}
                   {service.duration && (
-                    <div className="text-xs text-muted-foreground mt-2 tracking-wide">
-                      {service.duration}
-                    </div>
+                    <div className="text-xs text-muted-foreground mb-5">{service.duration}</div>
                   )}
 
-                  {/* Thin hairline divider */}
-                  <div className="hairline my-5" />
+                  <div className="hairline mb-5" />
 
-                  {/* Features list — minimal, small gold check (1.5 stroke) */}
                   {featuresList.length > 0 && (
-                    <ul className="space-y-2.5 mb-6 flex-1">
+                    <ul className="space-y-2.5 mb-6">
                       {featuresList.map((f, j) => (
-                        <li
-                          key={j}
-                          className="flex items-start gap-2 text-sm text-muted-foreground"
-                        >
-                          <Check
-                            className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5"
-                            strokeWidth={1.5}
-                          />
+                        <li key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
+                          <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                           <span>{f}</span>
                         </li>
                       ))}
                     </ul>
                   )}
 
-                  {/* Button — full width, solid primary if featured, outline if not. NO rounded-full. */}
                   <button
-                    onClick={() => scrollTo("contact")}
-                    className={`w-full py-3 text-sm font-medium tracking-wide transition-colors duration-300 motion-ease rounded-md ${
-                      featured
-                        ? "bg-primary text-primary-foreground hover:bg-primary-pale"
-                        : "border border-border text-foreground hover:border-border-strong hover:text-primary"
+                    onClick={() => {
+                      const el = document.getElementById("contact");
+                      if (el) {
+                        const top = el.getBoundingClientRect().top + window.scrollY - 64;
+                        window.scrollTo({ top, behavior: "smooth" });
+                      }
+                    }}
+                    className={`w-full py-2.5 text-sm font-medium transition-all duration-300 motion-ease ${
+                      service.featured
+                        ? "bg-primary text-primary-foreground hover:opacity-90"
+                        : "border border-border text-foreground hover:border-primary hover:text-primary"
                     }`}
                   >
-                    {t("احجز الآن", "Book Now")}
+                    {t("احجزي الآن", "Book Now")}
                   </button>
                 </motion.div>
               );
@@ -208,15 +162,19 @@ export function Services() {
           </div>
         )}
 
-        {/* Bottom note — small italic customization note */}
+        {/* Bottom note */}
         <motion.div
-          {...fade(0.2)}
-          className="mt-16 flex justify-start"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3, ease: EASE }}
+          className="text-center mt-14"
         >
-          <p className="text-sm italic text-muted-foreground leading-loose max-w-2xl">
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <span className="text-primary">✦</span>{" "}
             {t(
-              "✦ جميع الباقات قابلة للتخصيص حسب احتياجاتك. للمناسبات الكبرى والمشاريع الإبداعية، تواصل مباشرة للحصول على عرض مخصص.",
-              "✦ All packages are fully customizable. For large-scale events and creative projects, reach out directly for a tailored proposal."
+              "جميع الباقات قابلة للتخصيص حسب احتياجاتك. للمناسبات الكبرى، تواصلي مباشرة لعرض مخصص.",
+              "All packages are customizable. For large events, contact directly for a custom quote."
             )}
           </p>
         </motion.div>
