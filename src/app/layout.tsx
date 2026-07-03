@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Amiri, Tajawal } from "next/font/google";
+import { Playfair_Display, Inter, Amiri, Tajawal, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next";
@@ -9,7 +9,15 @@ import { LanguageProvider } from "@/components/shared/LanguageProvider";
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -108,9 +116,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className="dark">
+    <html lang="ar" dir="rtl" suppressHydrationWarning className="light">
       <body
-        className={`${playfair.variable} ${inter.variable} ${amiri.variable} ${tajawal.variable} antialiased bg-background text-foreground`}
+        className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${amiri.variable} ${tajawal.variable} antialiased bg-background text-foreground`}
       >
         <LanguageProvider>
           <SiteJsonLd />
