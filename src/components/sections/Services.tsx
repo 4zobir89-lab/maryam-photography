@@ -85,7 +85,7 @@ export function Services() {
     return (
       <section
         id="services"
-        className="py-24 md:py-36 bg-background border-t border-border"
+        className="py-28 md:py-40 bg-background border-t border-border"
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
           <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
@@ -118,7 +118,7 @@ export function Services() {
   return (
     <section
       id="services"
-      className="relative py-24 md:py-36 bg-background border-t border-border overflow-hidden"
+      className="relative py-28 md:py-40 bg-background border-t border-border overflow-hidden"
     >
       {/* Ambient decorations */}
       <div className="absolute top-1/4 right-0 w-[440px] h-[440px] rounded-full bg-primary/[0.05] blur-[150px] pointer-events-none animate-slow-pulse" />
@@ -146,7 +146,7 @@ export function Services() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
-          className="mb-14 max-w-2xl"
+          className="mb-16 max-w-2xl"
         >
           <h2 className="section-title mb-5">
             {titleMain && (
@@ -191,7 +191,7 @@ export function Services() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ duration: 0.7, delay: i * 0.08, ease: EASE }}
-                  className={`relative p-7 rounded-2xl lift-card flex flex-col overflow-hidden ${
+                  className={`relative p-7 rounded-xl lift-card flex flex-col overflow-hidden ${
                     featured
                       ? "glass-dark border border-primary/30 ambient-glow"
                       : "surface-card"
@@ -224,8 +224,8 @@ export function Services() {
                   {/* Description */}
                   {service.description && (
                     <p
-                      className={`text-xs leading-relaxed mb-4 ${
-                        featured ? "text-white/65" : "text-muted-foreground"
+                      className={`text-sm leading-relaxed mb-4 ${
+                        featured ? "text-white/75" : "text-muted-foreground"
                       }`}
                     >
                       {service.description}
@@ -245,7 +245,7 @@ export function Services() {
                     {service.duration && (
                       <span
                         className={`font-inter text-[10px] tracking-[0.2em] uppercase ${
-                          featured ? "text-white/55" : "text-muted-foreground"
+                          featured ? "text-white/70" : "text-muted-foreground"
                         }`}
                       >
                         {service.duration}
@@ -266,7 +266,7 @@ export function Services() {
                       {featuresList.map((f, j) => (
                         <li
                           key={j}
-                          className="flex items-start gap-2 text-xs leading-relaxed"
+                          className="flex items-start gap-2 text-sm leading-relaxed"
                         >
                           <Check
                             className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0"
@@ -281,7 +281,7 @@ export function Services() {
                   {/* CTA */}
                   <button
                     onClick={scrollToContact}
-                    className="btn-luxury mt-auto w-full py-3 px-5 rounded-full bg-primary text-primary-foreground text-[11px] tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="btn-luxury mt-auto w-full py-3 px-5 rounded-full bg-primary text-primary-foreground text-[11px] tracking-[0.2em] uppercase font-medium hover:opacity-90 hover:scale-[1.02] active:scale-[0.99] transition-all duration-500 flex items-center justify-center gap-2"
                   >
                     {t("احجزي الآن", "Book Now")}
                     <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />

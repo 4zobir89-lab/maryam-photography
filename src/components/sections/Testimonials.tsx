@@ -120,7 +120,7 @@ export function Testimonials() {
 
   if (loading) {
     return (
-      <section id="testimonials" className="py-24 md:py-36 bg-secondary">
+      <section id="testimonials" className="py-28 md:py-40 bg-secondary">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
           <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
         </div>
@@ -195,7 +195,7 @@ export function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="relative py-24 md:py-36 bg-secondary overflow-hidden"
+      className="relative py-28 md:py-40 bg-secondary overflow-hidden"
     >
       {/* Ambient glow center */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/[0.06] blur-[180px] pointer-events-none animate-slow-pulse" />
@@ -224,7 +224,7 @@ export function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
-          className="section-title text-center mb-14"
+          className="section-title text-center mb-16"
         >
           {titleMain && (
             <span className="text-foreground">{titleMain} </span>
@@ -247,7 +247,7 @@ export function Testimonials() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.6, ease: EASE }}
-              className={`glass-dark rounded-3xl overflow-hidden ${
+              className={`glass-dark rounded-xl overflow-hidden ${
                 hasImage
                   ? "grid grid-cols-1 md:grid-cols-5"
                   : "max-w-3xl mx-auto p-8 md:p-14 text-center"
@@ -309,7 +309,7 @@ export function Testimonials() {
                         <div className="font-amiri text-base text-white truncate">
                           {currentT.nameAr}
                         </div>
-                        <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/55 mt-0.5">
+                        <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/70 mt-0.5">
                           {currentT.roleEn}
                         </div>
                       </div>
@@ -351,7 +351,7 @@ export function Testimonials() {
                       <div className="font-amiri text-base text-white">
                         {currentT.nameAr}
                       </div>
-                      <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/55 mt-0.5">
+                      <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/70 mt-0.5">
                         {currentT.roleEn}
                       </div>
                     </div>
@@ -433,7 +433,7 @@ export function Testimonials() {
                   delay: 0.3 + i * 0.08,
                   ease: EASE,
                 }}
-                className="glass-card rounded-2xl p-6 text-center lift-card"
+                className="glass-card rounded-xl p-6 text-center lift-card"
               >
                 <div className="w-10 h-10 mx-auto rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-3">
                   <Icon className="w-4 h-4" strokeWidth={1.5} />
@@ -482,7 +482,8 @@ export function Testimonials() {
               <img
                 src={viewImage}
                 alt={t("شهادة", "Testimonial")}
-                className="w-full max-h-[82vh] object-contain rounded-lg border border-border"
+                decoding="async"
+                className="w-full max-h-[82vh] object-contain rounded-xl border border-border"
               />
             </motion.div>
           </motion.div>

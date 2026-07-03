@@ -53,7 +53,7 @@ export function About() {
 
   if (loading || !s) {
     return (
-      <section id="about" className="py-24 md:py-36 bg-background">
+      <section id="about" className="py-28 md:py-40 bg-background">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
           <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
         </div>
@@ -84,7 +84,7 @@ export function About() {
   return (
     <section
       id="about"
-      className="relative py-24 md:py-36 bg-background overflow-hidden"
+      className="relative py-28 md:py-40 bg-background overflow-hidden"
     >
       {/* Ambient decorations */}
       <div className="absolute top-0 right-0 w-[440px] h-[440px] rounded-full bg-primary/[0.05] blur-[150px] pointer-events-none animate-slow-pulse" />
@@ -100,7 +100,7 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8, ease: EASE }}
-          className="flex items-center gap-4 mb-14"
+          className="flex items-center gap-4 mb-16"
         >
           <span className="w-12 h-px bg-primary/40" />
           <span className="eyebrow">{s.aboutSubtitleEn || t("الفنانة", "The Artist")}</span>
@@ -117,10 +117,10 @@ export function About() {
           >
             <div className="relative max-w-[480px] mx-auto lg:mx-0">
               {/* Decorative border frame */}
-              <div className="absolute -top-4 -right-4 w-full h-full rounded-2xl border border-primary/30 pointer-events-none" />
+              <div className="absolute -top-4 -right-4 w-full h-full rounded-xl border border-primary/30 pointer-events-none" />
 
               {/* Portrait */}
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl bg-card">
+              <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-card">
                 {s.aboutImageData ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

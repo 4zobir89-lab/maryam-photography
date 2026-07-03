@@ -111,7 +111,7 @@ export function Portfolio() {
 
   if (loading) {
     return (
-      <section id="portfolio" className="py-24 md:py-36 bg-background">
+      <section id="portfolio" className="py-28 md:py-40 bg-background">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
           <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
         </div>
@@ -144,7 +144,7 @@ export function Portfolio() {
   return (
     <section
       id="portfolio"
-      className="relative py-24 md:py-36 bg-background overflow-hidden"
+      className="relative py-28 md:py-40 bg-background overflow-hidden"
     >
       {/* Ambient decorations */}
       <div className="absolute top-1/3 left-0 w-[440px] h-[440px] rounded-full bg-primary/[0.04] blur-[150px] pointer-events-none" />
@@ -169,7 +169,7 @@ export function Portfolio() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
-          className="section-title mb-12"
+          className="section-title mb-16"
         >
           {titleMain && (
             <span className="text-foreground">{titleMain} </span>
@@ -183,7 +183,7 @@ export function Portfolio() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-          className="flex flex-wrap gap-2 mb-12"
+          className="flex flex-wrap gap-2 mb-16"
         >
           {categories.map((cat) => (
             <button
@@ -216,7 +216,7 @@ export function Portfolio() {
                   exit={{ opacity: 0, scale: 0.97 }}
                   transition={{ duration: 0.5, delay: (i % 6) * 0.05, ease: EASE }}
                   onClick={() => openProject(project)}
-                  className="group relative w-full block mb-5 break-inside-avoid overflow-hidden rounded-2xl bg-card text-right"
+                  className="group relative w-full block mb-5 break-inside-avoid overflow-hidden rounded-xl bg-card text-right cursor-pointer"
                 >
                   {project.imageData ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -239,7 +239,7 @@ export function Portfolio() {
                   {/* Caption */}
                   <div className="absolute bottom-0 inset-x-0 p-5 text-right">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-inter text-[10px] tracking-[0.25em] uppercase text-white/60">
+                      <span className="font-inter text-[10px] tracking-[0.25em] uppercase text-white/75">
                         {project.year}
                       </span>
                       {project.featured && (
@@ -251,7 +251,7 @@ export function Portfolio() {
                     <h3 className="font-amiri text-xl text-white mb-1">
                       {project.titleAr}
                     </h3>
-                    <p className="font-inter text-[10px] tracking-[0.25em] uppercase text-white/55">
+                    <p className="font-inter text-[10px] tracking-[0.25em] uppercase text-white/70">
                       {categoryLabel(project.category)}
                     </p>
                   </div>
@@ -336,7 +336,8 @@ export function Portfolio() {
                     <img
                       src={galleryImages[currentIdx]}
                       alt={selected.titleAr}
-                      className="w-full max-h-[64vh] object-contain rounded-lg"
+                      decoding="async"
+                      className="w-full max-h-[64vh] object-contain rounded-xl"
                     />
                   )}
                 </motion.div>
@@ -363,7 +364,7 @@ export function Portfolio() {
                     <button
                       key={i}
                       onClick={() => setCurrentIdx(i)}
-                      className={`relative w-16 h-16 shrink-0 overflow-hidden rounded-md transition-all duration-300 ${
+                      className={`relative w-16 h-16 shrink-0 overflow-hidden rounded-xl transition-all duration-300 ${
                         i === currentIdx
                           ? "ring-2 ring-primary ring-offset-2 ring-offset-card"
                           : "opacity-50 hover:opacity-90"

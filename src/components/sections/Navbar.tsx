@@ -110,7 +110,7 @@ export function Navbar() {
 
             <div className="relative h-16 px-6 flex items-center justify-between border-b border-border">
               <span className="font-display text-2xl font-light tracking-[0.15em] text-foreground uppercase">Mariam</span>
-              <button onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Close">
+              <button onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-colors duration-300 motion-ease" aria-label="Close">
                 <X size={24} strokeWidth={1.5} />
               </button>
             </div>

@@ -69,6 +69,7 @@ export function Hero() {
           <img
             src={s.heroImageData}
             alt="مريم"
+            decoding="async"
             className="w-full h-full object-cover scale-110 ken-burns"
           />
         </div>
@@ -125,7 +126,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.7, ease: EASE }}
-          className="max-w-lg text-sm md:text-base leading-relaxed text-white/50 font-light mb-10"
+          className="max-w-lg text-sm md:text-base leading-relaxed text-white/70 font-light mb-10"
         >
           {s.heroDescAr}
         </motion.p>
@@ -139,13 +140,13 @@ export function Hero() {
         >
           <button
             onClick={() => scrollTo("portfolio")}
-            className="btn-luxury group px-8 py-3.5 bg-primary/90 text-primary-foreground text-[12px] tracking-[0.2em] uppercase font-medium rounded-full hover:bg-primary transition-all duration-500 hover:shadow-lg hover:shadow-primary/20"
+            className="btn-luxury group px-8 py-3.5 bg-primary/90 text-primary-foreground text-[12px] tracking-[0.2em] uppercase font-medium rounded-full hover:bg-primary hover:scale-[1.02] active:scale-[0.99] transition-all duration-500 hover:shadow-lg hover:shadow-primary/20"
           >
             {s.heroCta1Ar}
           </button>
           <button
             onClick={() => scrollTo("contact")}
-            className="btn-luxury group px-8 py-3.5 border border-white/20 text-white/80 text-[12px] tracking-[0.2em] uppercase font-light rounded-full hover:border-white/40 hover:text-white transition-all duration-500 flex items-center justify-center gap-2"
+            className="btn-luxury group px-8 py-3.5 border border-white/20 text-white/80 text-[12px] tracking-[0.2em] uppercase font-light rounded-full hover:border-white/40 hover:text-white hover:scale-[1.02] active:scale-[0.99] transition-all duration-500 flex items-center justify-center gap-2"
           >
             <Play size={12} className="fill-current" strokeWidth={0} />
             {s.heroCta2Ar}
@@ -160,12 +161,12 @@ export function Hero() {
         transition={{ delay: 2.5, duration: 1, ease: EASE }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="font-inter text-[10px] tracking-[0.3em] uppercase text-white/30">Scroll</span>
+        <span className="font-inter text-[10px] tracking-[0.3em] uppercase text-white/50">Scroll</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
         >
-          <ArrowDown size={16} className="text-white/30" strokeWidth={1.5} />
+          <ArrowDown size={16} className="text-white/50" strokeWidth={1.5} />
         </motion.div>
       </motion.div>
 
@@ -193,7 +194,7 @@ export function Hero() {
                   >
                     {stat.num}
                   </div>
-                  <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/55 mt-1.5">
+                  <div className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/75 mt-1.5">
                     {stat.label}
                   </div>
                 </div>
@@ -211,7 +212,7 @@ export function Hero() {
         className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-4"
       >
         <span className="w-px h-16 bg-white/10" />
-        <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/20 [writing-mode:vertical-rl] rotate-180">
+        <span className="font-inter text-[10px] tracking-[0.2em] uppercase text-white/40 [writing-mode:vertical-rl] rotate-180">
           Est. 2018
         </span>
         <span className="w-px h-16 bg-white/10" />

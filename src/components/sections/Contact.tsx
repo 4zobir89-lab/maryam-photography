@@ -95,7 +95,7 @@ export function Contact() {
     return (
       <section
         id="contact"
-        className="py-24 md:py-36 bg-background border-t border-border"
+        className="py-28 md:py-40 bg-background border-t border-border"
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
           <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
@@ -138,7 +138,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="relative py-24 md:py-36 bg-background border-t border-border overflow-hidden"
+      className="relative py-28 md:py-40 bg-background border-t border-border overflow-hidden"
     >
       {/* Ambient glows */}
       <div className="absolute top-1/4 right-0 w-[440px] h-[440px] rounded-full bg-primary/[0.06] blur-[150px] pointer-events-none animate-slow-pulse" />
@@ -165,7 +165,7 @@ export function Contact() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
-          className="mb-14 max-w-2xl"
+          className="mb-16 max-w-2xl"
         >
           <h2 className="section-title mb-5">
             {titleMain && (
@@ -193,7 +193,7 @@ export function Contact() {
             {/* Email */}
             <a
               href={`mailto:${s.contactEmail}`}
-              className="glass-card rounded-2xl p-5 flex items-center gap-4 lift-card group"
+              className="glass-card rounded-xl p-5 flex items-center gap-4 lift-card group"
             >
               <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-500 motion-ease">
                 <Mail className="w-4 h-4" strokeWidth={1.5} />
@@ -212,7 +212,7 @@ export function Contact() {
             {/* Phone */}
             <a
               href={`tel:${s.contactPhone.replace(/[^+\d]/g, "")}`}
-              className="glass-card rounded-2xl p-5 flex items-center gap-4 lift-card group"
+              className="glass-card rounded-xl p-5 flex items-center gap-4 lift-card group"
             >
               <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-500 motion-ease">
                 <Phone className="w-4 h-4" strokeWidth={1.5} />
@@ -229,7 +229,7 @@ export function Contact() {
             </a>
 
             {/* Address */}
-            <div className="glass-card rounded-2xl p-5 flex items-center gap-4 lift-card">
+            <div className="glass-card rounded-xl p-5 flex items-center gap-4 lift-card">
               <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                 <MapPin className="w-4 h-4" strokeWidth={1.5} />
               </div>
@@ -242,7 +242,7 @@ export function Contact() {
             </div>
 
             {/* Studio hours */}
-            <div className="glass-card rounded-2xl p-5 flex items-center gap-4 lift-card">
+            <div className="glass-card rounded-xl p-5 flex items-center gap-4 lift-card">
               <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                 <Clock className="w-4 h-4" strokeWidth={1.5} />
               </div>
@@ -297,7 +297,7 @@ export function Contact() {
           >
             <form
               onSubmit={handleSubmit}
-              className="glass-dark rounded-3xl p-8 md:p-10 relative overflow-hidden"
+              className="glass-dark rounded-xl p-8 md:p-10 relative overflow-hidden"
             >
               {/* Inner ambient glow */}
               <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
@@ -316,7 +316,7 @@ export function Contact() {
                         setForm({ ...form, name: e.target.value })
                       }
                       placeholder={t("مثال: أحمد علي", "e.g. Ahmed Ali")}
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm"
                     />
                   </div>
 
@@ -335,7 +335,7 @@ export function Contact() {
                       }
                       placeholder="+967 77 123 4567"
                       dir="ltr"
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm text-right"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm text-right"
                     />
                   </div>
                 </div>
@@ -353,7 +353,7 @@ export function Contact() {
                     }
                     placeholder="you@example.com"
                     dir="ltr"
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm text-right"
+                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm text-right"
                   />
                 </div>
 
@@ -404,7 +404,7 @@ export function Contact() {
                       "أخبريني عن مشروعك...",
                       "Tell me about your project..."
                     )}
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm resize-none"
+                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:border-primary focus:bg-white/10 transition-colors text-sm resize-none"
                   />
                 </div>
 
@@ -428,7 +428,7 @@ export function Contact() {
                 <button
                   type="submit"
                   disabled={sent || sending}
-                  className={`btn-luxury w-full py-4 px-6 rounded-full font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-2.5 transition-all duration-500 motion-ease disabled:opacity-70 ${
+                  className={`btn-luxury w-full py-4 px-6 rounded-full font-medium text-[11px] tracking-[0.2em] uppercase flex items-center justify-center gap-2.5 hover:scale-[1.02] active:scale-[0.99] transition-all duration-500 motion-ease disabled:opacity-70 disabled:hover:scale-100 ${
                     sent
                       ? "bg-green-600 text-white"
                       : "bg-primary text-primary-foreground hover:opacity-90"

@@ -118,7 +118,7 @@ export function Gallery() {
 
   if (loading) {
     return (
-      <section id="gallery" className="py-24 md:py-36 bg-secondary">
+      <section id="gallery" className="py-28 md:py-40 bg-secondary">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-center min-h-[40vh]">
           <div className="w-6 h-6 border border-border border-t-primary rounded-full animate-spin" />
         </div>
@@ -134,7 +134,7 @@ export function Gallery() {
   return (
     <section
       id="gallery"
-      className="relative py-24 md:py-36 bg-secondary overflow-hidden"
+      className="relative py-28 md:py-40 bg-secondary overflow-hidden"
     >
       {/* Ambient decorations */}
       <div className="absolute top-1/3 right-0 w-[420px] h-[420px] rounded-full bg-primary/[0.04] blur-[150px] pointer-events-none" />
@@ -142,7 +142,7 @@ export function Gallery() {
 
       <div className="relative max-w-7xl mx-auto px-6">
         {/* Header — eyebrow + title + description + view all */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
           <div className="max-w-2xl">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -192,7 +192,7 @@ export function Gallery() {
           >
             <Link
               href="/gallery"
-              className="btn-luxury inline-flex items-center gap-3 px-6 py-3 bg-primary text-primary-foreground text-[11px] tracking-[0.2em] uppercase font-medium rounded-full hover:shadow-lg hover:shadow-primary/20 transition-all duration-500"
+              className="btn-luxury inline-flex items-center gap-3 px-6 py-3 bg-primary text-primary-foreground text-[11px] tracking-[0.2em] uppercase font-medium rounded-full hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.99] transition-all duration-500"
             >
               {t("عرض الكل", "View All")}
               <ArrowIcon size={14} strokeWidth={1.5} />
@@ -201,7 +201,7 @@ export function Gallery() {
         </div>
 
         {/* Grid — 2/3/4 columns responsive */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {items.map((item, i) => (
             <motion.div
               key={item.id}
@@ -209,7 +209,7 @@ export function Gallery() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: (i % 8) * 0.05, ease: EASE }}
-              className="group relative aspect-square rounded-lg overflow-hidden bg-card"
+              className="group relative aspect-square rounded-xl overflow-hidden bg-card cursor-pointer"
             >
               {item.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -232,7 +232,7 @@ export function Gallery() {
                 <p className="font-amiri text-sm text-white truncate">
                   {item.titleAr}
                 </p>
-                <p className="font-inter text-[9px] tracking-[0.2em] uppercase text-white/60">
+                <p className="font-inter text-[11px] tracking-[0.2em] uppercase text-white/75">
                   {item.year}
                 </p>
               </div>
