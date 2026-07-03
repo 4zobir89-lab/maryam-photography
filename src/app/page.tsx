@@ -10,7 +10,7 @@ import { Footer } from "@/components/sections/Footer";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen flex flex-col bg-background">
+    <main className="bg-background">
       <Navbar />
       <Hero />
       <About />

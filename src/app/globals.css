@@ -4,14 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ================================================================
-   MARYAM PHOTOGRAPHY — Cinematic Quiet Luxury Design System
-   ================================================================
-   Principles:
-   - Generous whitespace, breathing room
-   - Gold as ACCENT only, never as background filler
-   - Neutral hairlines, warm-tinted surfaces
-   - One unified motion easing
-   - Type scale with real hierarchy (display thin, headline heavy)
+   MARYAM — Minimal Cinematic Design System
+   Less, but better. Gold as punctuation, never as paint.
    ================================================================ */
 
 @theme inline {
@@ -57,349 +51,205 @@
   --radius-xl: 8px;
 }
 
-/* ================================================================
-   DARK MODE (default)
-   ================================================================ */
-:root,
-.dark {
+/* ===== DARK (default) ===== */
+:root, .dark {
   color-scheme: dark;
-
-  /* Surfaces — warm charcoal, NOT pure black */
-  --background: oklch(11% 0.004 285);
-  --foreground: oklch(95% 0.002 90);
-  --card: oklch(14% 0.004 285);
-  --card-foreground: oklch(95% 0.002 90);
-  --popover: oklch(14% 0.004 285);
-  --popover-foreground: oklch(95% 0.002 90);
-
-  /* Primary — champagne gold, used sparingly */
-  --primary: oklch(80% 0.13 82);
-  --primary-foreground: oklch(12% 0.004 285);
-
-  /* Secondary — subtle raised surface */
-  --secondary: oklch(17% 0.004 285);
-  --secondary-foreground: oklch(90% 0.002 90);
-
-  /* Muted */
-  --muted: oklch(16% 0.004 285);
-  --muted-foreground: oklch(64% 0.004 90);
-
-  /* Accent — same as primary */
-  --accent: oklch(80% 0.13 82);
-  --accent-foreground: oklch(12% 0.004 285);
-
-  /* Destructive */
+  --background: oklch(9% 0.003 285);
+  --foreground: oklch(96% 0.001 90);
+  --card: oklch(13% 0.003 285);
+  --card-foreground: oklch(96% 0.001 90);
+  --popover: oklch(13% 0.003 285);
+  --popover-foreground: oklch(96% 0.001 90);
+  --primary: oklch(78% 0.13 82);
+  --primary-foreground: oklch(9% 0.003 285);
+  --secondary: oklch(15% 0.003 285);
+  --secondary-foreground: oklch(90% 0.001 90);
+  --muted: oklch(14% 0.003 285);
+  --muted-foreground: oklch(60% 0.003 90);
+  --accent: oklch(78% 0.13 82);
+  --accent-foreground: oklch(9% 0.003 285);
   --destructive: oklch(60% 0.18 25);
-  --destructive-foreground: oklch(98% 0.002 90);
-
-  /* Borders — NEUTRAL hairline, not gold */
-  --border: oklch(95% 0 0 / 0.10);
-  --input: oklch(20% 0.004 285);
-  --ring: oklch(80% 0.13 82 / 0.5);
-
-  /* Charts */
-  --chart-1: oklch(80% 0.13 82);
-  --chart-2: oklch(68% 0.10 60);
-  --chart-3: oklch(55% 0.08 40);
-  --chart-4: oklch(42% 0.06 30);
-  --chart-5: oklch(90% 0.05 88);
-
-  /* Sidebar */
-  --sidebar: oklch(13% 0.004 285);
-  --sidebar-foreground: oklch(95% 0.002 90);
-  --sidebar-primary: oklch(80% 0.13 82);
-  --sidebar-primary-foreground: oklch(12% 0.004 285);
-  --sidebar-accent: oklch(18% 0.004 285);
-  --sidebar-accent-foreground: oklch(95% 0.002 90);
-  --sidebar-border: oklch(95% 0 0 / 0.08);
-  --sidebar-ring: oklch(80% 0.13 82 / 0.5);
-
-  /* Selection */
-  --selection-bg: oklch(80% 0.13 82 / 0.25);
-  --selection-fg: oklch(98% 0.002 90);
-
-  /* Radius */
+  --destructive-foreground: oklch(98% 0.001 90);
+  --border: oklch(100% 0 0 / 0.07);
+  --input: oklch(18% 0.003 285);
+  --ring: oklch(78% 0.13 82 / 0.4);
+  --chart-1: oklch(78% 0.13 82);
+  --chart-2: oklch(65% 0.10 60);
+  --chart-3: oklch(52% 0.08 40);
+  --chart-4: oklch(40% 0.06 30);
+  --chart-5: oklch(88% 0.05 88);
+  --sidebar: oklch(11% 0.003 285);
+  --sidebar-foreground: oklch(96% 0.001 90);
+  --sidebar-primary: oklch(78% 0.13 82);
+  --sidebar-primary-foreground: oklch(9% 0.003 285);
+  --sidebar-accent: oklch(16% 0.003 285);
+  --sidebar-accent-foreground: oklch(96% 0.001 90);
+  --sidebar-border: oklch(100% 0 0 / 0.06);
+  --sidebar-ring: oklch(78% 0.13 82 / 0.4);
+  --selection-bg: oklch(78% 0.13 82 / 0.2);
+  --selection-fg: oklch(98% 0.001 90);
   --radius: 4px;
 }
 
-/* ================================================================
-   LIGHT MODE — warm paper, NOT pure white
-   ================================================================ */
+/* ===== LIGHT ===== */
 .light {
   color-scheme: light;
-
-  --background: oklch(97% 0.006 85);
-  --foreground: oklch(22% 0.006 285);
-  --card: oklch(99% 0.004 85);
-  --card-foreground: oklch(22% 0.006 285);
-  --popover: oklch(99% 0.004 85);
-  --popover-foreground: oklch(22% 0.006 285);
-
-  --primary: oklch(52% 0.11 75);
-  --primary-foreground: oklch(98% 0.002 85);
-
-  --secondary: oklch(93% 0.006 85);
-  --secondary-foreground: oklch(30% 0.006 285);
-
-  --muted: oklch(94% 0.005 85);
-  --muted-foreground: oklch(48% 0.006 285);
-
-  --accent: oklch(52% 0.11 75);
-  --accent-foreground: oklch(98% 0.002 85);
-
-  --destructive: oklch(52% 0.16 25);
-  --destructive-foreground: oklch(98% 0.002 85);
-
-  --border: oklch(22% 0.006 285 / 0.12);
-  --input: oklch(90% 0.006 85);
-  --ring: oklch(52% 0.11 75 / 0.4);
-
-  --chart-1: oklch(52% 0.11 75);
-  --chart-2: oklch(60% 0.10 60);
-  --chart-3: oklch(48% 0.08 40);
-  --chart-4: oklch(40% 0.06 30);
-  --chart-5: oklch(72% 0.08 88);
-
-  --sidebar: oklch(95% 0.005 85);
-  --sidebar-foreground: oklch(22% 0.006 285);
-  --sidebar-primary: oklch(52% 0.11 75);
-  --sidebar-primary-foreground: oklch(98% 0.002 85);
-  --sidebar-accent: oklch(92% 0.005 85);
-  --sidebar-accent-foreground: oklch(22% 0.006 285);
-  --sidebar-border: oklch(22% 0.006 285 / 0.10);
-  --sidebar-ring: oklch(52% 0.11 75 / 0.4);
-
-  --selection-bg: oklch(52% 0.11 75 / 0.18);
-  --selection-fg: oklch(22% 0.006 285);
+  --background: oklch(98% 0.004 85);
+  --foreground: oklch(20% 0.004 285);
+  --card: oklch(100% 0.002 85);
+  --card-foreground: oklch(20% 0.004 285);
+  --popover: oklch(100% 0.002 85);
+  --popover-foreground: oklch(20% 0.004 285);
+  --primary: oklch(50% 0.11 75);
+  --primary-foreground: oklch(98% 0.001 85);
+  --secondary: oklch(94% 0.004 85);
+  --secondary-foreground: oklch(28% 0.004 285);
+  --muted: oklch(95% 0.003 85);
+  --muted-foreground: oklch(45% 0.004 285);
+  --accent: oklch(50% 0.11 75);
+  --accent-foreground: oklch(98% 0.001 85);
+  --destructive: oklch(50% 0.16 25);
+  --destructive-foreground: oklch(98% 0.001 85);
+  --border: oklch(20% 0.004 285 / 0.10);
+  --input: oklch(90% 0.004 85);
+  --ring: oklch(50% 0.11 75 / 0.35);
+  --chart-1: oklch(50% 0.11 75);
+  --chart-2: oklch(58% 0.10 60);
+  --chart-3: oklch(46% 0.08 40);
+  --chart-4: oklch(38% 0.06 30);
+  --chart-5: oklch(70% 0.08 88);
+  --sidebar: oklch(96% 0.003 85);
+  --sidebar-foreground: oklch(20% 0.004 285);
+  --sidebar-primary: oklch(50% 0.11 75);
+  --sidebar-primary-foreground: oklch(98% 0.001 85);
+  --sidebar-accent: oklch(93% 0.003 85);
+  --sidebar-accent-foreground: oklch(20% 0.004 285);
+  --sidebar-border: oklch(20% 0.004 285 / 0.08);
+  --sidebar-ring: oklch(50% 0.11 75 / 0.35);
+  --selection-bg: oklch(50% 0.11 75 / 0.15);
+  --selection-fg: oklch(20% 0.004 285);
 }
 
-/* ================================================================
-   BASE LAYER
-   ================================================================ */
+/* ===== BASE ===== */
 @layer base {
   * {
-    @apply border-border;
     border-color: var(--border);
   }
-
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
-
   body {
-    @apply bg-background text-foreground;
+    background: var(--background);
+    color: var(--foreground);
     font-family: var(--font-tajawal), var(--font-inter), system-ui, sans-serif;
     font-feature-settings: "kern", "liga";
     overflow-x: hidden;
   }
-
   ::selection {
     background: var(--selection-bg);
     color: var(--selection-fg);
   }
-
-  /* Refined scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--muted-foreground);
-    opacity: 0.3;
-    border-radius: 4px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
-  }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--muted) transparent;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+  * { scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
 }
 
-/* ================================================================
-   TYPOGRAPHY UTILITIES
-   ================================================================ */
-
-/* Eyebrow — tiny uppercase label */
+/* ===== TYPOGRAPHY ===== */
 .eyebrow {
   font-family: var(--font-inter), sans-serif;
   font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--primary);
   line-height: 1;
 }
 
-/* Display heading — large, thin, elegant */
 .display-heading {
   font-family: var(--font-amiri), serif;
   font-weight: 700;
   line-height: 1.0;
-  letter-spacing: 0;
 }
 
-/* Section title — heavy, anchoring */
 .section-title {
   font-family: var(--font-amiri), serif;
   font-weight: 700;
-  font-size: clamp(2.25rem, 4.5vw, 3.75rem);
-  line-height: 1.08;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.1;
   letter-spacing: -0.005em;
 }
 
-/* Body large — for subtitles and lead paragraphs */
 .body-lg {
-  font-size: 1.0625rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.8;
   color: var(--muted-foreground);
   font-weight: 400;
 }
 
-/* Motion ease utility */
-.motion-ease {
-  transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
-}
+.motion-ease { transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1); }
+.font-display { font-family: var(--font-playfair), serif; }
+.font-amiri { font-family: var(--font-amiri), serif; }
+.font-inter { font-family: var(--font-inter), sans-serif; }
 
-/* Font helpers */
-.font-display {
-  font-family: var(--font-playfair), serif;
-}
-.font-amiri {
-  font-family: var(--font-amiri), serif;
-}
-.font-inter {
-  font-family: var(--font-inter), sans-serif;
-}
-
-/* ================================================================
-   COLOR / TEXT UTILITIES
-   ================================================================ */
-
-/* Gold gradient text — used SPARINGLY, only for decorative accents */
+/* ===== COLOR ===== */
 .text-gold-gradient {
-  background: linear-gradient(
-    135deg,
-    oklch(88% 0.08 84) 0%,
-    oklch(80% 0.13 82) 50%,
-    oklch(72% 0.10 78) 100%
-  );
+  background: linear-gradient(135deg, oklch(86% 0.08 84) 0%, oklch(78% 0.13 82) 50%, oklch(70% 0.10 78) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
 
-/* ================================================================
-   LAYOUT UTILITIES
-   ================================================================ */
-
-/* Hairline — subtle horizontal divider */
+/* ===== LAYOUT ===== */
 .hairline {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--border) 30%,
-    var(--border) 70%,
-    transparent 100%
-  );
+  background: var(--border);
 }
 
-/* Surface card — solid, no blur */
 .surface-card {
   background: var(--card);
   border: 1px solid var(--border);
 }
 
-/* Glass card — backwards compat alias */
 .glass-card {
   background: var(--card);
   border: 1px solid var(--border);
 }
 
-/* Lift card — subtle hover */
 .lift-card {
   transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
               border-color 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.lift-card:hover {
-  transform: translateY(-4px);
-}
+.lift-card:hover { transform: translateY(-3px); }
 
-/* Reveal up — scroll animation */
 .reveal-up {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.9s cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.reveal-up.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+.reveal-up.is-visible { opacity: 1; transform: translateY(0); }
 
-/* Vertical text */
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
 }
 
-/* ================================================================
-   ANIMATIONS
-   ================================================================ */
-
-/* Marquee */
+/* ===== ANIMATIONS ===== */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-.animate-marquee {
-  animation: marquee 45s linear infinite;
-}
-.animate-marquee-reverse {
-  animation: marquee 45s linear infinite reverse;
-}
+.animate-marquee { animation: marquee 50s linear infinite; }
 
-/* Slow zoom (Ken Burns) — for hero images */
 @keyframes ken-burns {
   0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.12) translate(-1.5%, -1.5%); }
+  100% { transform: scale(1.1) translate(-1%, -1%); }
 }
-.ken-burns {
-  animation: ken-burns 25s ease-out infinite alternate;
-}
+.ken-burns { animation: ken-burns 25s ease-out infinite alternate; }
 
-/* Shimmer text — subtle */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.shimmer-text {
-  background: linear-gradient(
-    90deg,
-    var(--muted-foreground) 0%,
-    var(--primary) 50%,
-    var(--muted-foreground) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 6s linear infinite;
-}
-
-/* Hide scrollbar but keep scrollable */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
