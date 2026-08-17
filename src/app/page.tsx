@@ -1,27 +1,5 @@
-import { Navbar } from "@/components/sections/Navbar";
-import { Hero } from "@/components/sections/Hero";
-import { About } from "@/components/sections/About";
-import { Marquee } from "@/components/sections/Marquee";
-import { Portfolio } from "@/components/sections/Portfolio";
-import { Gallery } from "@/components/sections/Gallery";
-import { Services } from "@/components/sections/Services";
-import { Testimonials } from "@/components/sections/Testimonials";
-import { Contact } from "@/components/sections/Contact";
-import { Footer } from "@/components/sections/Footer";
+import { ArchiveHomepage } from "@/components/ArchiveHomepage";
 
 export default function Home() {
-  return (
-    <main className="relative bg-background">
-      <Navbar />
-      <Hero />
-      <About />
-      <Marquee />
-      <Portfolio />
-      <Gallery />
-      <Services />
-      <Testimonials />
-      <Contact />
-      <Footer />
-    </main>
-  );
+  return <ArchiveHomepage />;
 }
