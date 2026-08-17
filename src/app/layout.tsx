@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Amiri, Tajawal, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
-import "./archive.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { SiteJsonLd } from "@/components/seo/JsonLd";
